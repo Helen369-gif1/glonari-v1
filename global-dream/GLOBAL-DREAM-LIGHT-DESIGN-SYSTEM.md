@@ -537,6 +537,7 @@ Add these tokens to `css/tokens.css`. They are used only by Screen 2 and by the 
   --gd-night-text: #F7F3EB;
   --gd-night-text-2: rgba(247, 243, 235, 0.72);
   --gd-night-text-3: rgba(247, 243, 235, 0.48);
+  --gd-night-umber: color-mix(in srgb, var(--gd-gold-deep) 45%, var(--gd-night)); /* added 2026-10-01: Screen 1 veil and text shadow only */
 }
 ```
 
@@ -561,6 +562,8 @@ A small label chip on top of photography or video may use `rgba(30, 35, 40, 0.55
 Veils over video exist purely for text legibility. They are permitted under Section 8.3 ("unless required for text legibility") and are not decorative gradient fills. A veil must never cover Gia.
 
 - Screen 1 uses a static dark veil built from `--gd-night` (`rgba(21, 24, 28, …)` linear gradient, darkest at the top, the lower half of the frame kept visibly light) with light text in `--gd-surface` and a soft `--gd-night` text shadow. Approved by the designer on 2026-09-29, replacing the earlier ivory veil. This is a legibility veil, not a dark section; the dark-screen rule in 16.1 is unaffected. Exact values are in build spec Section 5.1.
+
+  > **SUPERSEDED (2026-10-01)** — at the user's direct request the Screen 1 veil and text shadow are now built from `--gd-night-umber`, a warm bronze-umber mixed from `--gd-gold-deep` and `--gd-night`, instead of the neutral `--gd-night`. The veil is also lighter, fading fully to clear at the bottom, and the video is lifted slightly, so the lobby reads warm and bright rather than grey. It is still a legibility veil, not a dark section. Exact values are in build spec Section 5.1.
 
 ### 16.5 Pinned sections
 

@@ -72,4 +72,6 @@
   --gd-night-text: #F7F3EB;
   --gd-night-text-2: rgba(247, 243, 235, 0.72);
   --gd-night-text-3: rgba(247, 243, 235, 0.48);
+  /* Warm bronze-umber: the Screen 1 veil and text shadow only (16.4). */
+  --gd-night-umber: color-mix(in srgb, var(--gd-gold-deep) 45%, var(--gd-night));
 }

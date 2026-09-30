@@ -45,20 +45,25 @@
   object-fit: cover;
 }
 
-/* Static dark legibility veil (build spec 5.1, design system 16.4).
-   --gd-night at 62% / 56% / 24% / 16% / 12% alpha: dark behind the text
-   band, light in the lower half. It never animates. Positioned so it
+/* Static warm legibility veil (build spec 5.1, design system 16.4).
+   --gd-night-umber at 48% / 38% / 14% / 6% / 0% alpha: dark behind the
+   text band, clear in the lower half. The video is lifted slightly so the
+   lobby reads bright rather than grey. It never animates. Positioned so it
    paints above the positioned media layer. */
+.gd-hero__video {
+  filter: brightness(1.08) saturate(1.1) contrast(1.03);
+}
+
 .gd-hero__veil {
   position: relative;
   pointer-events: none;
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--gd-night) 62%, transparent) 0%,
-    color-mix(in srgb, var(--gd-night) 56%, transparent) 40%,
-    color-mix(in srgb, var(--gd-night) 24%, transparent) 55%,
-    color-mix(in srgb, var(--gd-night) 16%, transparent) 70%,
-    color-mix(in srgb, var(--gd-night) 12%, transparent) 100%
+    color-mix(in srgb, var(--gd-night-umber) 48%, transparent) 0%,
+    color-mix(in srgb, var(--gd-night-umber) 38%, transparent) 40%,
+    color-mix(in srgb, var(--gd-night-umber) 14%, transparent) 55%,
+    color-mix(in srgb, var(--gd-night-umber) 6%, transparent) 70%,
+    color-mix(in srgb, var(--gd-night-umber) 0%, transparent) 100%
   );
 }
 
@@ -105,7 +110,7 @@
   font-family: "Playfair Display", serif;
   font-weight: 500;
   color: var(--gd-surface);
-  text-shadow: 0 2px 24px color-mix(in srgb, var(--gd-night) 35%, transparent);
+  text-shadow: 0 2px 24px color-mix(in srgb, var(--gd-night-umber) 45%, transparent);
 }
 
 /* The start padding balances the trailing letter-spacing so GIA centres. */
