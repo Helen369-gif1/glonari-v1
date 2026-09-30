@@ -54,11 +54,10 @@ const ATRIUM = {
       plaque: [[314,304], [824,422], [824,530], [314,420]], href: null },
     { id: 'globalReserve', name: 'Global Reserve', inscription: ['Global', 'Reserve'],
       door: { cx: 1356, hw: 228, top: 712, bottom: 1695 },
-      plaque: [[1152,492],[1583,583],[1583,666],[1152,584]], href: null,
-      video: 'assets/global-reserve.mp4' },
+      plaque: [[1152,492],[1583,583],[1583,666],[1152,584]], href: '../../global-reserve/index.html' },
     { id: 'globalDream', name: 'Global Dream', inscription: ['Global', 'Dream'],
       door: { cx: 2014, hw: 168, top: 811, bottom: 1665 },
-      plaque: [[1866,637],[2211,691],[2211,757],[1866,714]], href: null },
+      plaque: [[1866,637],[2211,691],[2211,757],[1866,714]], href: '../../global-dream/index.html' },
     { id: 'globalConnections', name: 'Global Connections', inscription: ['Global', 'Connections'],
       door: { cx: 4496, hw: 168, top: 811, bottom: 1665 },
       plaque: [[4299,698],[4647,631],[4647,707],[4299,757]], href: null },
@@ -504,7 +503,7 @@ const ATRIUM = {
     animateTo(to, reduceMotion ? 1 : 1150, () => {
       veil.classList.add('on');
       setTimeout(() => {
-        if (r.href) { location.href = r.href; return; }
+        if (r.href) { leftFor = id; location.href = r.href; return; }
         document.body.classList.remove('entering');
         inRoom = id;
         roomTitle.textContent = r.name;
@@ -539,6 +538,23 @@ const ATRIUM = {
     }, reduceMotion ? 60 : 380);
   }
   backBtn.addEventListener('click', leaveRoom);
+
+  // Return via the browser Back button: the page can come back from the
+  // back/forward cache exactly as it was left (veil on, camera pushed into
+  // the doorway, input blocked). Undo that and ease back out to the view
+  // the visitor had before entering.
+  let leftFor = null;
+  addEventListener('pageshow', (e) => {
+    if (!e.persisted || !leftFor) return;
+    leftFor = null;
+    veil.classList.remove('on');
+    document.body.classList.remove('entering');
+    setActive(null);
+    setBusy(false);
+    if (savedView) animateTo(clampView({ ...savedView }), reduceMotion ? 1 : 900);
+    playWindow();
+    playHost();
+  });
 
   /* ---------- мышь, палец, колесо ---------- */
   const pointers = new Map();
