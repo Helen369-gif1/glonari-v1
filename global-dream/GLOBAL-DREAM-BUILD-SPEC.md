@@ -9,7 +9,7 @@
 - This document and every project file are English only. Never emit Cyrillic characters into any file: not in markup, copy, CSS, comments, commit messages, filenames, or `alt` / `aria-label` / `title` attributes.
 - All user-facing copy is quoted verbatim in Section 5. Copy it character for character, including the typographic apostrophe `’` and the em dash `—`. Do not rewrite, shorten, "improve", or re-punctuate it.
 - If a string you need is not in this document, do not invent it. Insert `<!-- TODO: copy needed -->` and list it in your report.
-- Items marked **PROPOSED** are not yet approved. Do not build them until a prompt states they are approved. As of Version 1.1 every item in this document is approved; the rule remains for future additions.
+- Items marked **PROPOSED** are not yet approved. Do not build them until a prompt states they are approved. As of Version 1.1 every item in this document is approved; the rule remains for future additions. Version 1.2 (2026-10-01) adds Screens 2a and 2b (Sections 5.2a and 5.2b), the second dark accent screen and the fifth header link. All of it was approved by the user on 2026-10-01.
 
 ---
 
@@ -22,9 +22,11 @@ A single static landing page that presents **Gia**, the AI guide of Global Dream
 3. Everything connects — Gia on a tablet at the centre, five life areas connecting to her.
 4. Gia in your life — a pinned horizontal story over a scroll-scrubbed walking video, four content stops with side brochures, then the final CTA.
 
+> **Approved (2026-10-01)** — two screens are inserted between Screens 2 and 3, making six screens in this order: 1, 2, **2a — She knows you** (light: Gia remembers what matters and turns it into help), **2b — She’s on your side** (the second dark accent screen: the member stays in control of what Gia remembers, uses and shares), 3, 4. Approved Screens 1–4 keep their ids, copy and behaviour; the new screens get their own ids so nothing approved is renumbered. Specified in Sections 5.2a and 5.2b.
+
 Plus a global site shell (header, footer) built last and only after its copy is approved.
 
-Tone: clear, premium, calm, modern, minimal. Light theme with one dark accent screen. Elegant motion, never noisy. Gia is presented as the main guide throughout.
+Tone: clear, premium, calm, modern, minimal. Light theme with one dark accent screen (**Approved 2026-10-01:** two dark accent screens, Screens 2 and 2b, never adjacent). Elegant motion, never noisy. Gia is presented as the main guide throughout.
 
 This page must not try to explain the entire Global Dream ecosystem. It helps the visitor understand who Gia is, why she matters, how she helps, and where to start.
 
@@ -52,6 +54,9 @@ Everything below is already prepared in the repository.
 /media/logo/favicon-32.png, apple-touch-icon.png   Favicons made from the emblem
 /favicon.ico                               16/32/48 favicon
 /media/brochures/*.webp                    Eight brochure images (main + inline per brochure), extracted from the brochure PDF
+/media/gd-knows.webp                       Screen 2a photo: member at home with Gia on a tablet, 3640x2048, ~262KB (added 2026-10-01)
+/media/gd-side.webp                        Screen 2b photo: the same member with his phone at dusk, 2460x3072, ~181KB (added 2026-10-01)
+/media/gia-avatar.webp                     Screens 2a and 2b Gia avatar, 256x256, cropped from gd-knows.webp (added 2026-10-01; used on 2a since the 2a rework)
 /references/Global_Dream_Gia_Structure_EN.txt       Original content brief
 /references/oceanx-horizontal-story-reference.mp4   Screen 4 motion reference (third-party site, reference only)
 /references/oceanx-contact-sheet.jpg                1 frame per second of the reference
@@ -82,12 +87,14 @@ Do not copy text, logos, or UI from `references/oceanx-*`. It is used only for m
 /index.html
 /css/tokens.css          Tokens only: design-system Section 3 plus Section 16 dark accent tokens
 /css/base.css            Reset, fonts, container, buttons, utilities, reveal classes
-/css/screens.css         Screens 1, 2, 3
+/css/screens.css         Screens 1, 2, 3 (and 2a, 2b)
 /css/gia-story.css       Screen 4 stage, story modules, final CTA, brochures
 /css/site-shell.css      Header and footer (built last)
 /js/hero-scrub.js        Screen 1 scroll-to-video binding and phrase timeline
 /js/reveal.js            Shared IntersectionObserver reveal
 /js/gia-conversation.js  Screen 2 conversation rail animation
+/js/gia-knows.js         Screen 2a photo, memory panel and quote animation
+/js/gia-side.js          Screen 2b photo, request panel animation and switches
 /js/gia-connect.js       Screen 3 life-area connection animation
 /js/gia-story.js         Screen 4 scrub, horizontal modules, progress, final CTA
 /js/brochure.js          Screen 4 side brochure dialogs
@@ -100,6 +107,7 @@ Do not copy text, logos, or UI from `references/oceanx-*`. It is used only for m
 - One `<section>` per screen: `id="screen-1"` to `id="screen-4"`.
 - `data-screen` slugs: `hero`, `conversation`, `connects`, `life`.
 - The final CTA lives inside Screen 4 and has `id="screen-4-final"` for anchor links.
+- **Approved (2026-10-01):** Screens 2a and 2b are `<section id="screen-knows" data-screen="knows">` and `<section id="screen-side" data-screen="side">`, placed in the DOM between `#screen-2` and `#screen-3`. They stay `hidden` until implemented and visually verified. Load order adds `gia-knows.js` and `gia-side.js` directly after `gia-conversation.js`.
 - Load order at the end of `<body>`: GSAP, then `hero-scrub.js`, `reveal.js`, `gia-conversation.js`, `gia-connect.js`, `gia-story.js`, `brochure.js`, `site-shell.js`. Each file initialises itself on `DOMContentLoaded` by finding its section.
 - Fonts: one Google Fonts request: Playfair Display 500 and 700; IBM Plex Sans 400, 500, 600, 700; IBM Plex Mono 400, 500, 600; `display=swap`; preconnect to both Google hosts.
 - `<title>`: `Gia — Global Dream`
@@ -111,14 +119,14 @@ Do not copy text, logos, or UI from `references/oceanx-*`. It is used only for m
 
 ### 4.1 Tokens
 
-Use the design system's `--gd-*` tokens (Section 3 of the design system) and the dark accent tokens in design-system Section 16, which are used only by Screen 2 and by the Screen 1 veil and text shadow (Section 5.1). No raw colour values in screen CSS except inside `tokens.css`.
+Use the design system's `--gd-*` tokens (Section 3 of the design system) and the dark accent tokens in design-system Section 16, which are used only by Screen 2 and by the Screen 1 veil and text shadow (Section 5.1). **Approved (2026-10-01):** also by Screen 2b, which uses `--gd-night-warm` and `--gd-night-warm-surface`. No raw colour values in screen CSS except inside `tokens.css`.
 
 ### 4.2 Buttons
 
 All CTAs on this page are `<a class="gd-button …" href="#">` (destinations TODO) except the Screen 4 brochure triggers, which are `<button type="button">`.
 
 - `.gd-button--primary` on light: fill `--gd-gold-deep`, text `#fff`, 1px border `--gd-gold-deep`.
-- `.gd-button--primary` on dark (Screen 2): fill `--gd-gold`, text `--gd-text-primary`.
+- `.gd-button--primary` on dark (Screen 2, and Screen 2b if a button is ever added there): fill `--gd-gold`, text `--gd-text-primary`.
 - `.gd-button--secondary`: transparent, 1px `--gd-gold-line` border, text `--gd-text-primary`.
 - Radius 8px, padding `16px 28px`, IBM Plex Sans 600, 15px, letter-spacing `0.01em`. Hover: 200ms, border or fill deepens slightly; no transform.
 - Focus: `outline: 2px solid var(--gd-gold-deep); outline-offset: 3px` (on dark: `--gd-gold`).
@@ -132,7 +140,7 @@ Use exactly: `Gia` · `Global Dream` · `Digital Banker` · `Glonari` · `Glonar
 
 Only two pinned (sticky-stage) sections exist on this page: Screen 1 and Screen 4. Everything else flows normally. Neither pin is applied under `prefers-reduced-motion: reduce`.
 
-### 4.5 Reveal (Screens 2 and 3 text)
+### 4.5 Reveal (Screens 2, 2a, 2b and 3 text)
 
 Shared `js/reveal.js`: elements with `[data-reveal]` animate once from `opacity: 0; translateY(24px)` to rest, 600ms, `cubic-bezier(.22,.61,.36,1)`, when 25% visible. `[data-reveal-delay="n"]` adds `n × 120ms`. Reduced motion: shown at rest immediately. If JS fails, content must be visible (apply the hidden starting state only after JS adds `.js` to `<html>`).
 
@@ -191,6 +199,8 @@ In is the time a block's entrance starts. Out is the time its exit starts. Each 
 
 **Why dark here.** This is the page's single dark accent, approved by the designer. It marks the change of register from the warm cinematic hero to explanation, and it links the page visually to the dark Digital Banker world (`references/digital-banker-reference.png`). Screens 3 and 4 return to light. Use only the dark tokens from design-system Section 16.
 
+> **Approved (2026-10-01)** — Screen 2 becomes the first of two dark accent screens; the second is Screen 2b (Section 5.2b). Screen 2 itself is unchanged. The light Screen 2a follows it, so the two dark screens never touch.
+
 **Layout.** `gd-section` padding, background `--gd-night`. Container 1200px. Editorial split `minmax(0, 1fr) minmax(0, 1fr)`, gap `--gd-grid-gap`, `align-items: center`.
 
 - Left column: H2, body, closing lines, button.
@@ -224,11 +234,259 @@ Reduced motion: rail complete (gold line full, all nodes active, all phrases vis
 
 ---
 
+### 5.2a Screen 2a — She knows you
+
+**Status.** Copy approved by the user on 2026-10-01: every string in this section is final, reproduce it verbatim. Photo-led layout approved on 2026-10-01. Build with task A9.
+
+**Purpose.** Show what makes Gia different from other AI: she is an ongoing relationship, not a fresh start with every question. The visitor sees memory turn into help through one concrete moment, in a real home, with a real person. Plain language only. Every Glonari concept must be understandable before it is named, so this screen names no product other than Gia: no Cortex, G-Power, GLO, Gia Power or Global Connections.
+
+**Position.** Directly after Screen 2, before Screen 2b. Section `#screen-knows`, class `gd-section gd-knows`, `data-screen="knows"`. Background `--gd-bg` (light ivory). It is the light section that separates the two dark accent screens (design-system Section 16.1).
+
+**Asset.** `media/gd-knows.webp`, 3640×2048 (16:9), about 262KB: a man in his late forties on a sofa in a warm, lamp-lit living room at night, city lights through the window, talking and gesturing towards a tablet on the coffee table where Gia smiles on a video call. The man sits in the left 40% of the frame, the tablet spans about 44%–70% of the width, and the right 30% (lamp, sofa, plant, books) carries no important subject. No text or interface is baked into the image.
+
+- `alt="A man relaxing at home in the evening, talking with Gia on a tablet"`, `width="3640" height="2048"`, `loading="lazy"`, `decoding="async"`.
+- Gia in this photo differs from the Gia in the page videos and the Screen 3 tablet image (Appendix B, item 3).
+
+**Composition** (top to bottom, all inside the 1200px container):
+
+1. Header block, left-aligned, max-width 720px: H2, body.
+2. Photo stage, 48px below the header (64px at 1200px and above): `<div class="gd-knows__stage">`, full container width, `aspect-ratio: 16 / 9`, radius 8px, `overflow: hidden` on the stage itself. The image fills it (`width: 100%; height: 100%; object-fit: cover; object-position: 35% 50%`). From 1200px up, the overlay column sits on the photo (see Overlays).
+3. Closing row, 48px below the stage: a grid `minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr)`, gap 32px, `align-items: end`: stage 1, stage 2, key line. (From 1200px up this row is replaced; see "Screen 2a rework" at the end of this section.)
+
+| Element | Copy | Style |
+|---|---|---|
+| H2 | `AI should know more than your question. It should know you.` | H2 standard, `--gd-text-primary` |
+| Body | `Most AI starts over every time you ask. Gia is built as an ongoing relationship. She remembers what you want her to remember — and becomes more helpful over time.` | Lead, `--gd-text-secondary`, max-width 560px, 24px below H2 |
+| Stage 1 label | `AT FIRST` | Eyebrow style, `--gd-gold-deep` |
+| Stage 1 text | `What you want. What matters. How you like things done.` | Body, `--gd-text-primary`, 8px below its label |
+| Stage 2 label | `OVER TIME` | Eyebrow style, `--gd-gold-deep` |
+| Stage 2 text | `Your goals, preferences, routines and plans.` | Body, `--gd-text-primary`, 8px below its label |
+| Key line | `She doesn’t just know your question. She knows you.` | Large data phrase, `--gd-gold-deep` |
+
+There is no button on this screen. Screen 3 carries the next call to action, and two extra buttons in a row would dilute it.
+
+**Stages.** A `<dl class="gd-knows__stages">` with one `<div>` per stage holding `<dt>` (label) and `<dd>` (text); each stage has a 1px `--gd-line-soft` top rule and 16px padding-top. The `<dl>` uses `display: contents` inside the closing-row grid so the two stages are its first two columns.
+
+**Overlays** (1200px and above). One overlay column (`.gd-knows__overlay`, `position: absolute`), inside the stage, right-aligned at an inset of 32px from the right, top and bottom edges of the stage, `width: min(30%, 360px)`, a flex column with the memory panel at the top and the quote card at the bottom, at least 16px apart. It must never cover the tablet or the man's face: verify at 1200, 1440 and 1920 that its left edge stays right of the tablet frame (about 70% of the stage width). If the two cards do not fit the stage height at some width, the quote card's outcome line may move outside the stage, never the panel rows. Below 1200px the overlays leave the photo (see Responsive).
+
+> **Approved (2026-10-01, task A9)** — the geometry above conflicted with its own rule: at `min(30%, 360px)` with a 32px right inset, the overlay's left edge sits at 67.1% of the stage at 1200, 1440 and 1920, covering the tablet frame and stand (which end at about 69.7%) by about 28px, and the two cards together reach the stage's bottom edge. At the user's choice it is replaced: from 1200px up **only the memory panel sits on the photo**, top-right at a 32px inset from the top and right edges, `width: min(calc(30% - 56px), 360px)` (about 275px), so its left edge stays 24px right of the tablet (measured 72.2% at 1200, 1440 and 1920). The **quote card sits under the stage**, 24px below it, right-aligned with the stage's right edge, `width: min(480px, 100%)`; the closing row follows 48px below the quote card. The `.gd-knows__overlay` wrapper is a sibling of the stage (not a child), so the stage still clips the photo's scale-in.
+
+**Memory panel** (`<figure class="gd-memory">`):
+
+- Surface `--gd-surface`, 1px `--gd-line`, radius 8px, padding 20px, `--gd-shadow-soft`. Solid, no transparency, no blur, no glow: the surface carries the contrast over the photo. (Superseded: surface, border, shadow and row style are now set by "Screen 2a rework" below.)
+- `<figcaption class="visually-hidden">`: `An example of what Gia remembers and how she uses it.`
+- Header: mono label `WHAT GIA REMEMBERS` (IBM Plex Mono 500, 11px, `0.12em`, uppercase, `--gd-text-secondary`), preceded by a 6px `--gd-gold` square, as on the Screen 4 chapter labels.
+- Memory list (`<ul class="gd-memory__list">`), 12px below the header. Each row: a 6px `--gd-gold` dot, then the text in small body (14px), `--gd-text-primary`; 8px vertical and 8px horizontal padding; radius 4px on the row so the highlight has soft corners; 1px `--gd-line-soft` divider between rows.
+
+| Row | Copy |
+|---|---|
+| 1 | `Moving to the city in spring` |
+| 2 | `Prefers a quiet neighbourhood` |
+| 3 | `Home budget agreed in March` |
+| 4 | `Daughter starts school in September` |
+| 5 | `Works from home three days a week` |
+
+**Quote card.** The brochure quote card component `.gd-quote` exactly as specified in Section 5.4a.2 (role label, quote, outcome line), on its `--gd-bg` background, padding reduced to 20px 24px inside the overlay. Gia is already visible on the tablet in the photo, so this card has no avatar. (Superseded: the card now has an elevated surface and Gia's avatar; see "Screen 2a rework" below.)
+
+| Element | Copy |
+|---|---|
+| Role label | `GIA` |
+| Quote | `“The home you saved just dropped in price. It still fits your budget, and it’s close to the school. Want me to arrange a viewing?”` |
+| Outcome line | `Gia remembered. Gia noticed. Gia acted.` (stored in sentence case, uppercased by CSS, as in 5.4a.2) |
+
+The memory rows and the quote are illustrative examples. They show the idea, not a real member's data.
+
+**Animation** (`js/gia-knows.js`, `initGiaKnows(section)`):
+
+1. Header text reveals with the shared reveal (Section 4.5), delays 0–1. The closing row reveals the same way when it enters, delays 0–2.
+2. When the stage is 30% visible, once:
+
+| Time | Event |
+|---:|---|
+| 0.0s | Photo: `opacity 0 → 1` and `scale 1.04 → 1` (transform on the image, the stage clips it), 1200ms, design-system ease |
+| 0.6s | Memory panel: `opacity 0 → 1`, `y: 16 → 0`, 600ms |
+| 1.0s–2.2s | Memory rows 1 to 5 appear in order, 300ms apart: `opacity 0 → 1`, `x: 12 → 0`, 500ms |
+| 2.8s | Rows 2, 3 and 4, the memories Gia is about to use, receive a `--gd-gold-soft` background, fading in over 400ms, 120ms apart |
+| 3.4s | Quote card: `opacity 0 → 1`, `y: 16 → 0`, 600ms |
+| 4.1s | Outcome line: its three sentences appear one after another, 250ms apart, opacity only (each sentence is its own `<span>`) |
+
+No ambient loop. The screen comes to rest. The photo is not pinned and has no parallax.
+
+Reduced motion: everything visible at rest, rows 2–4 highlighted, no animation.
+
+(Superseded: the trigger, the timings above and the "no ambient loop" rule are replaced by the motion in "Screen 2a rework" below.)
+
+**Responsive.**
+
+- 1199px to 769px: the overlays leave the photo. Under the stage, 24px below it, the memory panel and the quote card sit side by side in a 2-column grid (gap 24px, `align-items: start`), then the closing row.
+- 768px and below: the stage becomes `aspect-ratio: 4 / 3` with `object-position: 40% 50%` so the man and the tablet both stay in frame; the panel and the quote card stack under it (gap 16px), full container width; the closing row stacks (stages in 2 columns, then the key line; below 480px everything in one column, 24px gaps).
+- Verify at 1920, 1440, 1200, 1024, 768 and 375 that neither the man's face nor Gia on the tablet is cropped out or covered.
+
+> **Approved (2026-10-01, task A9)** — "full container width" at 768px and below conflicted with the 480px panel maximum in design-system 16.10. At the user's choice the design system applies: the memory panel and the quote card are at most 480px wide at every width, left-aligned when stacked (full width only where the container is narrower than 480px).
+
+> **Approved by the user on 2026-10-01 — Screen 2a rework.** The user reviewed the built screen and rejected it as pale, low in contrast, without visible motion and with an empty area under the photo. The changes below apply to Screen 2a only and override the conflicting parts of this section. The copy is unchanged.
+>
+> **Layout, 1200px and above.** The separate closing row is removed. Under the photo, 32px below it, one row: grid `minmax(0, 1fr) minmax(0, 420px)`, gap 48px, `align-items: start`. Left: the two stages side by side (gap 32px), and the key line under them (24px gap). Right: the quote card, full column width, its right edge on the photo's right edge. No empty area remains under the photo. The memory panel keeps its place on the photo (top-right, 32px inset, `width: min(calc(30% - 56px), 360px)`). The closing row moved into `.gd-knows__visual`, which becomes this grid; the overlay wrapper uses `display: contents`. Below 1200px the stacked order is unchanged: photo, memory panel and quote card, closing row.
+>
+> **Contrast and depth.** New token `--gd-shadow-card` (design-system Section 3).
+>
+> - Memory panel: background `--gd-surface-elevated`, 1px `--gd-gold-line` border, a 3px `--gd-gold` bar along its top edge (a background layer, so the radius clips it), `box-shadow: var(--gd-shadow-card)`. On the photo (1200px and up) it adds a darker contact shadow `0 8px 24px rgba(21,24,28,.28)` (written as `--gd-night` at 28%); under the photo it keeps `--gd-shadow-card` only.
+> - Memory rows: the dot becomes an 8px ring (2px `--gd-gold`) with a `--gd-gold` centre. Highlighted rows 2–4: `--gd-gold-soft` background, text `--gd-gold-deep`, weight 500. The weight change does not rewrap any row (heights measured equal in both states at 1920, 1200 and 375).
+> - Quote card: background `--gd-surface-elevated`, 1px `--gd-gold` border, `box-shadow: var(--gd-shadow-card)`. Its role row shows Gia's avatar (`media/gia-avatar.webp`, 40px circle, 2px `--gd-gold` ring, `alt=""`) 10px before the `GIA` label.
+> - Measured contrast: `--gd-text-primary` on `--gd-surface-elevated` 15.8:1; `--gd-text-secondary` (panel label) 7.2:1; `--gd-gold-deep` (outcome line) 5.9:1; `--gd-gold-deep` on a highlighted row (`--gd-gold-soft` over white) 5.1:1.
+>
+> **Gold threads** (1200px and above; design-system 16.9 extended to Screen 2a). One decorative SVG `.gd-knows__threads` (`aria-hidden`, `pointer-events: none`) covers the photo and the row under it, above the photo and below both cards.
+>
+> - Tablet node: the Screen 3 tablet node (12px ringed dot) with a pulse ring, on the tablet's right frame edge at the vertical centre of its screen. Measured on the image: the frame leans, so its right edge at the screen's centre is at **68.2% of the image width and 53.5% of its height** (the 69.7% in the brief is the frame's top-right corner; 52% was approximate). The measured position was approved by the user on 2026-10-01. The point is mapped through the `object-fit: cover` crop of the rendered photo; recomputed after the image and fonts load and on resize (debounced 150ms).
+> - Row threads: one per memory row, from the panel's left edge at the row's vertical centre to the tablet node; a cubic curve with horizontal tangents at both ends whose control points stay between its ends, so it never reaches over the tablet screen. 1.5px `--gd-gold`, round caps, glow `drop-shadow(0 0 4px)` in the Screen 3 glow colour. Rows 2–4 at full opacity, rows 1 and 5 at 35%.
+> - Card thread: from the tablet's bottom frame edge (62% of the image width, 74.7% of its height) down to the quote card's top border, a vertical S-curve in the same style, ending in a 12px ringed node centred on the card's top border above the avatar (an HTML node inside the card, so it moves with it).
+> - No thread crosses Gia's face or the man's face (verified at 1200, 1440 and 1920).
+>
+> **Motion** (`js/gia-knows.js`), triggered once when the stage is 25% visible:
+>
+> | Time | Event |
+> |---:|---|
+> | 0.0s | Photo `opacity 0 → 1`, `scale 1.08 → 1`, 1600ms, design-system ease |
+> | 0.5s | Memory panel `opacity 0 → 1`, `x: 40 → 0`, 700ms |
+> | 0.9s–2.1s | Rows 1–5 in order, 300ms apart: `opacity 0 → 1`, `x: 16 → 0`, 500ms; each row's thread draws (`stroke-dashoffset`) from the row to the tablet over 600ms, starting 200ms after its row |
+> | 2.6s | Tablet node pops in (`scale 0 → 1`, `back.out(2.5)`) with one pulse ring (`scale 1 → 2.6`, `opacity .6 → 0`, 700ms); rows 2–4 highlight 120ms apart |
+> | 3.2s | The tablet-to-card thread draws downward over 700ms |
+> | 3.9s | Quote card `opacity 0 → 1`, `y: 32 → 0`, `scale .97 → 1`, 700ms; its top node pops in |
+> | 4.6s | Outcome line, sentence by sentence, 250ms apart |
+>
+> Ambient, after the sequence, only while the section is visible (paused off-screen): every 3.5s a 6px glowing `--gd-gold` particle travels along the thread of row 2, 3 or 4 (cycling 2 → 3 → 4) to the tablet, 1.2s, ease-in-out, via `getPointAtLength`; the tablet node pulses once when it arrives.
+>
+> Reduced motion: everything at rest and visible, threads drawn, rows highlighted, no particle, no pulse. Below 1200px (cards under the photo): no threads and no nodes; the rest of the motion is unchanged. The section clips horizontal overflow (`overflow-x: clip`) so the panel's slide-in never causes page scrolling; no sticky stage lives inside it.
+
+---
+
+### 5.2b Screen 2b — She’s on your side (second dark accent screen)
+
+**Status.** Copy approved by the user on 2026-10-01: every string in this section is final, reproduce it verbatim. Photo-led layout approved on 2026-10-01. Build with task A10, after design-system 16.1 and 16.10 are in force.
+
+**Purpose.** Answer the question Screen 2a raises: if Gia knows this much, who is in control? Trust and control are shown, not only told. Privacy is a visible part of the story, not a footer link. The same man from 2a, later that evening, checks his phone: the home viewing Gia offered needs information from an agency, and Gia shares only what is needed.
+
+**Why dark here.** It is the second of the page's two dark accent screens (design-system Section 16.1). The serious register suits a screen about protection, and it matches the dark privacy spread of the Gia brochure. It is not adjacent to Screen 2: Screen 2a sits between them.
+
+**Position.** Directly after Screen 2a, before Screen 3. Section `#screen-side`, class `gd-side`, `data-screen="side"`. Background `--gd-night-warm` (a warm charcoal, design-system 16.1). The photo's warm evening light continues the colour of the section.
+
+**Assets.**
+
+- `media/gd-side.webp`, 2460×3072 (4:5), about 181KB: the same man on a terrace at dusk, golden lamp light, city lights and a blue evening sky behind him, smiling at a phone in his right hand, chin on his left hand. His face sits in the upper middle of the frame (about 30%–65% of the width, 15%–50% of the height), the phone at the right edge around 55%–70% of the height. The lower left (cup, fruit, blurred table) carries no important subject. No text or interface is baked in. `alt="The same man in the evening, smiling as he checks a message from Gia on his phone"`, `width="2460" height="3072"`, `loading="lazy"`, `decoding="async"`.
+- `media/gia-avatar.webp`, 256×256: Gia's face, cropped from `gd-knows.webp`, so it is the same Gia as on Screen 2a. Shown as a 32px circle; decorative (`alt=""`), since the `GIA` label next to it carries the name.
+
+**Layout.** The section is full-bleed (no container on the photo side) and has no section padding of its own: `display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); min-height: min(100svh, 960px)`.
+
+- Photo column (`.gd-side__media`, `grid-column: 1; grid-row: 1`): touches the left, top and bottom edges of the section, `position: relative; overflow: hidden`. The image fills it (`width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%`), so the face and phone stay in frame at every height. No veil, no gradient over the photo.
+- Text column (`.gd-side__text`, `grid-column: 2; grid-row: 1`): padding `var(--gd-section-pad) var(--gd-page-pad)`, content max-width 520px, vertically centred. In the DOM the text column comes first, so the H2 comes first in reading order.
+- The request panel sits over the photo, bottom-left: `position: absolute; left: 32px; bottom: 32px; width: min(420px, calc(100% - 64px))`. It must never cover the man's face or the phone in his hand: verify at 1920, 1440 and 1200 and move it to the bottom inset only (never up over the face) if needed.
+
+| Element | Copy | Style |
+|---|---|---|
+| H2 | `She’s on your side.` | H2 standard, `--gd-night-text` |
+| Body | `Gia works under your direction. You decide what she remembers, what she can use and what she can share.` | Lead, `--gd-night-text-2`, 24px below H2 |
+| Control 1 | `What Gia remembers` | Body, `--gd-night-text` |
+| Control 2 | `What she can use` | Body |
+| Control 3 | `What needs your approval` | Body |
+| Control 4 | `What she can share` | Body |
+| Controls note | `Example settings. Nothing is saved.` | `.visually-hidden`, directly after the list |
+| Key line | `Your Gia. Your information. Your decision.` | Large data phrase, `--gd-gold`, 48px below the controls |
+| Small print | `Glonari is designed to create value with its members, not sell their private profiles.` | Small body, `--gd-night-text-2`, 16px below the key line. Requires legal review before launch (Appendix B) |
+
+There is no button on this screen, for the same reason as 2a.
+
+**Controls.** A `<ul class="gd-side__controls">`, 32px below the body. Each `<li>` is one row: the label on the left, a switch on the right; 16px vertical padding; 1px `--gd-night-line` divider between rows. Each switch is `<button type="button" role="switch" aria-checked="true" aria-labelledby="…">`, labelled by its row text. Switch geometry (approved exception, design-system 16.10): track 44×24px, radius 12px; on: `--gd-gold` track with an 18px `--gd-night` thumb at the right; off: transparent track, 1px `--gd-night-line` border, `--gd-night-text-3` thumb at the left. The thumb moves with `transform`, 200ms. Focus ring: `--gd-gold`, as for other controls on dark.
+
+The switches work only on the page: a click toggles `aria-checked` and the visual state. Nothing is saved or sent. All four start on.
+
+**Request panel** (`<figure class="gd-request">`):
+
+- Surface `--gd-night-warm-surface`, 1px `--gd-night-line`, radius 8px, padding 24px. Solid, no transparency, no blur, no glow: the surface carries the contrast over the photo.
+- `<figcaption class="visually-hidden">`: `An example of Gia sharing only the information a company needs.`
+- Header: mono label `A COMPANY REQUESTS` (IBM Plex Mono 500, 11px, `0.12em`, uppercase, `--gd-night-text-2`), preceded by a 6px `--gd-gold` square.
+- Context line, 12px below: `To arrange your home viewing, the agency asks for:` Small body, `--gd-night-text`.
+- Request list (`<ul class="gd-request__list">`), 12px below. Each row: the item on the left (small body, `--gd-night-text`), the status on the right (IBM Plex Mono 600, 11px, `0.08em`, uppercase via CSS) with a 12px inline-SVG glyph before it (`aria-hidden`); 10px vertical padding; 1px `--gd-night-line` divider.
+
+| Row | Item | Status | Status colour and glyph |
+|---|---|---|---|
+| 1 | `Your name and contact details` | `Shared` | `--gd-night-text`, check mark in `--gd-gold` |
+| 2 | `Your purchase history` | `Not needed` | `--gd-night-text-2`, dash |
+| 3 | `Your location history` | `Not shared` | `--gd-night-text-2`, cross |
+
+No red anywhere (design-system 16.3): the cross is neutral. Status text is never `--gd-gold` on the panel surface: gold on `--gd-night-warm-surface` measures about 4.4:1, below AA for 11px text, so gold appears there only in the glyph (non-text, 3:1 is enough).
+
+- Gia's reply: one quote card, 16px below the list, using the dark variant of `.gd-quote` (design-system 16.10), whose background is `--gd-night-warm`, one step darker than the panel. Its role row shows Gia's avatar (`media/gia-avatar.webp`, 32px circle, 1px `--gd-gold-line` ring) followed 10px later by the role label `GIA` in `--gd-gold`. Quote `“They don’t need that information to complete this. I haven’t shared it.”` in `--gd-night-text`. No outcome line. This avatar is how Gia appears beside the man on this screen: the card sits on the photo next to the phone he is reading.
+
+**Animation** (`js/gia-side.js`, `initGiaSide(section)`):
+
+1. Text column reveals with the shared reveal (Section 4.5), delays 0 to 4. The controls list reveals as one block.
+2. When the photo column is 30% visible, once:
+
+| Time | Event |
+|---:|---|
+| 0.0s | Photo: `opacity 0 → 1` and `scale 1.04 → 1`, 1200ms, design-system ease |
+| 0.6s | Request panel: `opacity 0 → 1`, `y: 24 → 0`, 700ms |
+| 1.1s, 1.7s, 2.3s | Rows 1, 2, 3: the item appears (`opacity 0 → 1`, 400ms), then 400ms later its status appears (`opacity 0 → 1`, `scale 0.9 → 1`, 300ms) |
+| 3.2s | Quote card: `opacity 0 → 1`, `y: 16 → 0`, 600ms; the avatar fades in with it |
+
+No ambient loop. The photo is not pinned and has no parallax.
+
+Reduced motion: everything visible at rest; the switches still toggle, without the thumb transition.
+
+**Responsive.**
+
+- 1100px to 769px: keep the two columns while the text column is at least 360px; otherwise stack as below.
+- 768px and below (and whenever stacked): one column. The text column first, with section padding `var(--gd-section-pad-compact)` on top and 48px at the bottom. Then the photo as a full-bleed band, `aspect-ratio: 4 / 5` capped at `max-height: 80svh`, `object-position: 50% 25%`. The request panel leaves the photo and sits under it inside the page padding, overlapping the photo's bottom edge by 48px (`margin-top: -48px`, `position: relative`), with 72px section padding below it. Switch rows keep the label left and the switch right at every width.
+- Verify at 1920, 1440, 1200, 1024, 768 and 375 that the man's face and the phone are never covered or cropped out.
+
+> **Approved by the user on 2026-10-01 (task A10) — Screen 2b richer treatment.** The user rejected the first, restrained version of Screen 2a as pale and static, so Screen 2b is built with the same richer treatment from the start. The changes below apply to Screen 2b only and override the conflicting parts of this section. The copy is unchanged.
+>
+> **Contrast and depth.** New token `--gd-shadow-night-panel` (design-system 16.1).
+>
+> - Request panel: background `--gd-night-warm-surface`, 1px `--gd-gold-line` border, a 3px `--gd-gold` bar along its top edge (a background layer, so the radius clips it), `box-shadow: var(--gd-shadow-night-panel)` (`0 24px 60px rgba(0,0,0,.55), 0 2px 8px rgba(0,0,0,.35)`).
+> - Gia's quote card: avatar 40px circle with a 2px `--gd-gold` ring (as on 2a), role label `GIA` in `--gd-gold`, 1px `--gd-gold-line` border, `--gd-night-warm` background.
+> - Row 1 status: check glyph in `--gd-gold`. Rows 2 and 3: once their status appears, the item text dims to `--gd-night-text-2` (300ms). They are not struck through (approved by the user on 2026-10-02): with every switch on, a struck-through row read as a contradiction, while these rows show Gia’s own judgement that the agency does not need the information. The strike-through is used only on row 1, when the member turns `What she can share` off (see Interaction below): a 1px `--gd-night-text-3` line draws through the item left to right (300ms, `transform: scaleX`), and it marks the member’s own refusal. The strike line needs the item on one line, so a request row may wrap: where the item and its status do not fit side by side, the status moves under the item, still right-aligned (row 1 below 768px; all three rows at 320px). Every item stays on one line from 320px up.
+> - Text column: the key line in `--gd-gold`; a 48px-wide 1px `--gd-gold` rule 24px above the H2.
+> - Measured contrast: on `--gd-night-warm` (#23201D) `--gd-night-text` 14.65:1, `--gd-night-text-2` 8.20:1, `--gd-gold` 5.05:1 (key line, quote-card `GIA` label); on `--gd-night-warm-surface` (#2E2A27) `--gd-night-text` 12.81:1, `--gd-night-text-2` 7.40:1 (panel label, dimmed items, withheld statuses), `--gd-gold` 4.42:1 (check glyph only, non-text). `--gd-night-text-3` carries no text (strike line, off-switch thumb). Switch on: `--gd-night` thumb on `--gd-gold` 5.55:1.
+>
+> **Gold glow and thread** (design-system 16.9 extended to Screen 2b).
+>
+> - Phone halo (raised by the user on 2026-10-02; the first 180px / .35 halo read too faint): two radial `--gd-gold` layers in one element with `mix-blend-mode: screen` — an outer glow about 260px across, `--gd-gold` at 60% at its centre fading to transparent at its edge (max opacity .6), and a brighter inner core about 90px across (radius 45px), `--gd-gold` at 45%, fading to transparent. The alphas sit in the layers, so the element's opacity runs 0 → 1. To keep it off the man's face, the halo is 260px except where it or its 1.8× pulse would reach the face box (30–68% of the image width, 10–42% of its height, hair included): there the size is `2 × distance to the face box ÷ 1.8`, measured with the phone point; the core keeps its 45/260 ratio. Measured sizes: 260px at 1920, 1440, 1199 and 1024 (stacked); 239px at 1200; 238px at 768; 114px at 375. Clearance between the full pulse edge and the face box: 50px at 1920, 14px at 1440, 53px at 1024, at least 0px elsewhere (at rest the halo edge is 46–207px from the face box). Centred on the phone at **87% of the image width and 59% of its height**. Measured on the image, the phone spans 77.5–97% of the width and 51.8–67.5% of the height (top-left corner at 82.6% / 52.5%; the left edge leans down to 79.5% / 58% before the fingers cover it). The point is mapped through the `object-fit: cover` crop; recomputed after the image and fonts load and on resize (debounced 150ms). Inside the photo column, which clips it.
+> - Thread: one cubic curve from a 12px ringed node on the phone's left edge (**81.6% / 55.5%**) to a 12px ringed node centred on the request panel's top border, 40px from its right edge (an HTML node inside the panel). It leaves the phone horizontally and arrives on the border from above; 1.5px `--gd-gold`, round caps, one `drop-shadow(0 0 4px)` in the shared glow colour. Decorative SVG (`aria-hidden`, `pointer-events: none`) in the photo's grid cell, above the photo and below the panel. It never crosses the face (verified at 1920, 1440 and 1200; at least 89px below the chin).
+> - Only in the two-column layout. Stacked: the halo stays, the thread and both nodes are dropped.
+>
+> **Layout fixes** (approved by the user on 2026-10-02; the geometry above broke this section's own rule that the face and phone are never covered or cropped).
+>
+> - Two columns from **1200px** up only; below 1200px the stacked layout applies (the 2a breakpoint). Measured: below about 1175px the 420px panel on the photo covers the phone, and narrowing it pushes it up into the face. This replaces the 1100–769px rule above.
+> - Two-column photo: `object-position: 90% 30%` (was `50% 30%`, which cropped 39–63px off the phone's right side at 1440, 1200 and 1024). Only blurred background on the left is cropped; the face stays at least 95px from the column edge at 1200.
+> - Stacked photo band: `width: 100%` and `max-height: max(80svh, 72vw)` (was `80svh`; 72vw confirmed by the user on 2026-10-02). On landscape tablets an 80svh band is too short to hold both the face and the phone; portrait tablets and phones are unchanged.
+> - The panel, photo and thread share one grid cell (`grid-column: 1; grid-row: 1`; the panel `align-self: end; justify-self: start; margin: 32px`), so the panel is not clipped by the photo column.
+>
+> **Motion** (`js/gia-side.js`), triggered once when the photo column is 25% visible:
+>
+> | Time | Event |
+> |---:|---|
+> | 0.0s | Photo `opacity 0 → 1`, `scale 1.08 → 1`, 1600ms, design-system ease |
+> | 0.6s | Phone halo fades in (element opacity `0 → 1`, 400ms) |
+> | 1.0s | One halo pulse (a copy of the halo, `scale 1 → 1.8`, element opacity `1 → 0`, i.e. from the halo's full .6 / .45 layers, 900ms); the phone node pops in (`back.out(2.5)`); the thread draws from the phone to the panel (`stroke-dashoffset`, 700ms) |
+> | 1.5s | Request panel `opacity 0 → 1`, `y: 32 → 0`, `scale .97 → 1`, 700ms; its top node pops in at 1.7s, as the thread arrives |
+> | 2.2s, 2.9s, 3.6s | Rows 1–3: the item appears (300ms); a 2px `--gd-gold` scan line sweeps across the row left to right (400ms) and fades (150ms); at +0.45s the status pops in (`opacity 0 → 1`, `scale .8 → 1`, `back.out(2)`); for rows 2–3 the dim (300ms, no strike-through) follows at +0.75s |
+> | 4.4s | Quote card `opacity 0 → 1`, `y: 16 → 0`, 600ms, avatar with it |
+>
+> - Text column: shared reveal. Switches: when the controls list is 35% visible, they turn on one after another, 200ms apart (thumb slides, track fills gold, one soft gold glow pulse on the track). With JavaScript and motion they start off; `aria-checked` is set together with the visual state at every step. Without JavaScript they render on. A switch the member has already clicked is not changed by this sequence.
+> - Ambient, only while the section is visible (paused off-screen): every 4s a 6px glowing `--gd-gold` particle travels along the thread from the panel to the phone (1.2s, `getPointAtLength`); the halo pulses once (`scale 1 → 1.8`) when it arrives. Two-column layout only.
+> - Interaction: turning `What she can share` off changes row 1's status from `Shared` to `Not shared` (cross glyph, `--gd-night-text-2`, the row dims like rows 2–3 and, unlike them, is struck through); turning it back on restores `Shared` and removes the strike-through. Row 1's status element is `aria-live="polite"`. The other switches only toggle. Nothing is saved or sent.
+> - Reduced motion: everything at rest, thread drawn, halo static, no particle, no pulses, no scan lines; switches toggle instantly (no transition) and the share interaction still works.
+>
+> This replaces the animation table above and the "no ambient loop" rule for Screen 2b.
+
+---
+
 ### 5.3 Screen 3 — Everything connects
 
 **Purpose.** Show that Gia connects different parts of a person's life. Conceptual clarity, not product detail. Prepares the visitor for Screen 4.
 
-**Asset.** `media/gia-tablet.webp`, 1279×1062, transparent background: Gia on a video call on a tablet. It is the centrepiece and Gia's only close-up on the page.
+**Asset.** `media/gia-tablet.webp`, 1279×1062, transparent background: Gia on a video call on a tablet. It is the centrepiece and the page's largest view of Gia (since 2026-10-01 she also appears on the tablet in the Screen 2a photo and as a small avatar on Screen 2b).
 
 - `alt="Gia on a video call, speaking and gesturing as she explains"`, `width="1279" height="1062"`, `loading="lazy"`, `decoding="async"`.
 - The screen area of the tablet inside the image is approximately `left 4.5%, top 5.2%, width 91.3%, height 89.5%`. Overlays placed "on the screen" use these percentages on a wrapper that matches the image box exactly.
@@ -238,6 +496,8 @@ Reduced motion: rail complete (gold line full, all nodes active, all phrases vis
 **Visual target.** `references/screen-3-target.png` (approved mockup, reworked in A4).
 
 **Layout.** `gd-section gd-section--soft` (background `--gd-bg-soft`, the light alternate, which separates it from the ivory Screen 4 poster edge and the dark Screen 2).
+
+> **Approved (2026-10-01)** — with Screens 2a and 2b inserted, Screen 3 follows the dark Screen 2b instead of Screen 2. Its background and layout are unchanged.
 
 1. Centred header, max-width 720px: H2.
 2. The connection stage, 64–96px below the header, full container width: a 3-column grid `minmax(0, 1fr) minmax(0, clamp(320px, 42vw, 560px)) minmax(0, 1fr)`, column gap 48px, rows `1fr auto 1fr auto 3fr auto`. Centre column: the tablet, spanning rows 1–5. Areas 1 and 2 sit in rows 2 and 4 of the left column at its outer (left) edge; areas 3 and 4 mirror them at the outer (right) edge of the right column. The flexible rows put the icons of areas 1–4 near 17% and 53% of the tablet height, above the tablet attachment points, so every line is a visible S-curve. Area 5 sits in row 6, centred under the tablet, 32px below it.
@@ -347,6 +607,15 @@ What not to reproduce: the dark ocean palette, white-on-dark text, pill buttons 
 | 4.4 | `BUILD WHAT COMES NEXT` | `Your next opportunity may start with one conversation.` | `Explore business, travel, education, and other possibilities as they become part of your journey.` | `Learn more` | `#brochure-possibilities` |
 
 The four button labels were changed from the chapter action labels to `Learn more` on 2026-09-30; those labels now appear as each brochure's primary action (Section 5.4a.3).
+
+> **Approved by the user on 2026-10-02 — chapter card depth and gold.** The user found the four chapter cards too faint. The changes below apply to the four `.gd-module` cards only; the final CTA card, the track, the video, the timing, the brochures and all copy are unchanged. The translucent surface is kept exactly: `--gd-surface` at 92%, no blur.
+>
+> - Border: 1px `--gd-gold-line` (was `--gd-line`), plus a 3px `--gd-gold` bar along the top edge, clipped by the 8px radius (the card has `overflow: clip`; it contains no sticky element).
+> - Depth: `box-shadow: var(--gd-shadow-card), 0 10px 30px rgba(21,24,28,.22)` (written as `--gd-night` at 22%). This replaces "no shadow" above, for the chapter cards only.
+> - `Learn more`: 1px `--gd-gold` border; on hover and focus the border turns `--gd-gold-deep` with a soft glow `0 0 0 4px var(--gd-gold-soft)`, 200ms. The focus outline (Section 4.2), the dot and the behaviour are unchanged.
+> - Entrance, once per card: the first time the card becomes interactive (its `Learn more` button fully inside the stage, the existing `inert` threshold), it fades in (`opacity 0 → 1`) and rises (`y: 16 → 0`), and the gold bar draws left to right (`scaleX 0 → 1`, `transform-origin: left`), all 600ms, design-system ease. The user chose this trigger over the literal "rest position": the track has no holds, and left-zone cards reach their rest position only after crossing about 60% of the stage, so they would be invisible while crossing. The rise uses the CSS `translate` property, which composes with the track's inline `transform`; the track position stays a pure function of `p`. The entrance does not replay when scrolling back. This replaces "no opacity change" in the scroll model above for the chapter cards' one-time entrance only. Reduced motion, short viewports and no JavaScript: cards at rest, bar drawn.
+> - Measured contrast on the unchanged 92% surface, over every pixel of the walk video frames behind the card zone (21 points across the runway at 1920, 1440, 1200, 1024, 768 and 375; the frames contain pure white and pure black, so the worst case equals the black-background bound): `--gd-text-primary` (H3, button) 13.0:1, `--gd-text-secondary` (label, text) 5.9:1, `--gd-gold-deep` (eyebrow) 4.8:1; over white 15.6, 7.1 and 5.8:1. All AA.
+> - At rest, no chapter card overlaps Gia's figure at 1920, 1440, 1200 or 1024. Cards still cross her while moving (approved track). At 768 and 375 the docked full-width cards cover the lower part of her figure box (legs; 22% and 40% of the box), never her face or torso; this is the approved mobile docking, unchanged.
 
 Headings on the page stay in order: H2 for the section (visually hidden, text `Gia in your life`), H3 per module, H2 for the final CTA. The visually hidden H2 uses the standard `.visually-hidden` utility.
 
@@ -612,6 +881,7 @@ A light version of the Global Reserve site shell. Visual rules in design-system 
 - Back arrow (left of the brand), added 2026-10-01 when this page was connected to the Glonari chain: `<a class="gd-header__back" href="../digital-banker/atrium/index.html" aria-label="Back to Digital Banker atrium">&larr;</a>` — an explicit link to the Digital Banker atrium (the screen this page is entered from), never `history.back()`. 32×44px, `--gd-text-secondary`, hover `--gd-gold-deep`, same focus ring as the other header links. Mirrors the Global Reserve header's `.site-header__back`.
 - Entry veil, added 2026-10-01: a full-viewport `#entry-veil` (solid `#1c1005`, the atrium's own veil colour, `z-index: 2000`), opaque on first paint via an inline `<style>` in `<head>`, lifted by a small inline script after 90ms over 300ms (`ease-out`; instant with reduced motion) and then removed. It completes the atrium's dark-veil hand-off into this page. It is a separate layer and does not modify Screen 1's markup, CSS, JavaScript or timing.
 - Navigation: `Meet Gia` → `#screen-1`, `How she helps` → `#screen-2`, `Everything connects` → `#screen-3`, `In your life` → `#screen-4`. IBM Plex Sans 500, 15px, `--gd-text-primary`, hover/active `--gd-gold-deep`.
+- Fifth navigation link, approved by the user on 2026-10-01: `Your control` → `#screen-side`, placed between `How she helps` and `Everything connects` so the links follow the page order. Same style as the other links. It is added together with Screen 2b (task A10), never before: while `#screen-side` is hidden, the link would point to nothing. With five links the header may need the hamburger breakpoint re-checked; verify at 1100–1280px that the nav does not crowd the logo or the `Talk to Gia` button, and report rather than changing the breakpoint.
 - Action (right): one primary header button `Talk to Gia` (reuses the approved Screen 2 label), destination TODO.
 - Breakpoint 1100px: nav collapses into a CSS-line hamburger (`aria-label="Open menu"` / `"Close menu"`, `aria-expanded`, `aria-controls`) revealing a solid `--gd-bg` menu. Closes on link click, Escape (focus back to the hamburger), and outside click. No animation.
 - Footer: `--gd-bg-soft`, top hairline `--gd-line-soft`, compact padding. Top row: the logo `media/logo/gd-lockup-light.webp`, `alt="Glonari Global Dream"`, width 360px desktop (never above 420px, never upscaled), `min(100%, 280px)` on mobile, height auto. Then the same nav links, then IBM Plex Mono legal and copyright lines: `<!-- TODO: copy needed — legal line -->` and `© 2026 Global Dream`.
@@ -629,6 +899,8 @@ No registration or login dialogs on this page unless a later prompt adds them.
 | Gia tablet | 3 | `media/gia-tablet.webp` | Static image, animated only by transforms and overlays |
 | Walk video | 4 | `media/gd-walk.mp4` (+ `gd-walk-poster.jpg`) | Blob-loaded, scroll-scrubbed across the 650vh runway |
 | Logo | Shell | `media/logo/gd-lockup-light.webp`, `gd-emblem-light.webp` | Header and footer; never recoloured |
+| Screen 2a photo and avatar | 2a | `media/gd-knows.webp`, `media/gia-avatar.webp` | Lazy static images; the photo scales in once on entry |
+| Screen 2b photo and avatar | 2b | `media/gd-side.webp`, `media/gia-avatar.webp` | Lazy static images; scale-in once on entry |
 | Brochure images | 5.4a | `media/brochures/b-{homes,finances,moving,possibilities}-{main,inline}.webp` | Loaded on first open of each brochure (`data-src` → `src`); ~680KB total |
 
 Placeholder for any missing still or slot: `--gd-bg-soft` fill, 1px dashed `--gd-line`, centred IBM Plex Mono caption `Media pending` plus the expected filename, same `aspect-ratio` as the real asset. The page must never break because an asset is absent.
@@ -643,10 +915,10 @@ Weight budget: videos ~15.8MB (hero ~5.5MB, walk ~10.3MB), brochure images ~0.7M
 
 1. Pinned sections: Screen 1 and Screen 4 only. No parallax, no scroll hijacking, no scroll snapping, no page-level horizontal scroll.
 2. All scroll-driven motion is a pure function of progress and fully reversible on upward scroll.
-3. One `requestAnimationFrame` loop per pinned screen, started when its section is within one viewport of the visible area and stopped when it is further away. Ambient loops on Screens 2 and 3 pause off-screen.
-4. Animate `transform` and `opacity` only (plus `stroke-dashoffset` for Screen 3 lines and `scaleY`/`scaleX` for rails and progress). Never animate layout properties.
+3. One `requestAnimationFrame` loop per pinned screen, started when its section is within one viewport of the visible area and stopped when it is further away. Ambient loops on Screens 2 and 3 pause off-screen. (Approved 2026-10-01: Screens 2a and 2b each have one, a thread particle, which also pauses off-screen.)
+4. Animate `transform` and `opacity` only (plus `stroke-dashoffset` for Screen 3 lines and the Screen 2a and 2b threads, and `scaleY`/`scaleX` for rails and progress). Never animate layout properties.
 5. `prefers-reduced-motion: reduce`: complete, readable, static composition on every screen as specified per screen.
-6. Semantics: one `<h1>` (Screen 1). `<h2>` per screen. `<h3>` for Screen 2 rail phrases, Screen 3 areas, and Screen 4 modules. Links that navigate are `<a>`; controls that open brochures are `<button>`.
+6. Semantics: one `<h1>` (Screen 1). `<h2>` per screen. `<h3>` for Screen 2 rail phrases, Screen 3 areas, and Screen 4 modules. Links that navigate are `<a>`; controls that open brochures are `<button>`. **Approved (2026-10-01):** the Screen 2b switches are `<button type="button" role="switch" aria-checked>`, each labelled by its row text; the 2a and 2b panels are `<figure>` elements with a visually hidden `<figcaption>`.
 7. Keyboard: visible focus rings, logical tab order, no positive `tabindex`, no focus on invisible content (`inert` rules above).
 8. Contrast: all text meets WCAG AA, including text over video (checked on first, middle, and last frames).
 9. Images: explicit `width`/`height`, `loading="lazy"` below the fold.
@@ -657,10 +929,12 @@ Weight budget: videos ~15.8MB (hero ~5.5MB, walk ~10.3MB), brochure images ~0.7M
 ## 8. ACCEPTANCE CHECKLIST
 
 - [ ] No Cyrillic in any project file: `LC_ALL=C.UTF-8 grep -rnP "[\x{0400}-\x{04FF}]" --include=*.{html,css,js,md} .`
-- [ ] Four sections with the ids and `data-screen` values from Section 3; `#screen-4-final` exists.
+- [ ] Four sections with the ids and `data-screen` values from Section 3; `#screen-4-final` exists. (Since 2026-10-01: six sections, in the order 1, 2, 2a, 2b, 3, 4.)
 - [ ] Every visible string matches Section 5 character for character; every missing string is a listed TODO.
 - [ ] Screen 1 scrubs smoothly, text blocks never overlap, block 3 and `Meet Gia` hold to the end, the button is only interactive when visible.
-- [ ] Screen 2 is the only dark section; its rail completes once and its ambient dot pauses off-screen.
+- [ ] Screen 2 is the only dark section; its rail completes once and its ambient dot pauses off-screen. (Since 2026-10-01: Screens 2 and 2b are the only dark sections and are never adjacent.)
+- [ ] Screen 2a memory rows appear in order with their threads, rows 2–4 highlight before the quote card, the outcome line appears sentence by sentence; from 1200px up the only loop is the thread particle, paused off-screen.
+- [ ] Screen 2b request rows resolve in order, no red is used, the switches toggle by mouse, touch and keyboard (Space and Enter) and announce their state; `What she can share` switches row 1 between `Shared` and `Not shared`; nothing is saved; the thread particle pauses off-screen.
 - [ ] Screen 3 areas appear in order 1–5, lines stay attached to the tablet at every width above 1100px, and the stacked layout replaces lines below it.
 - [ ] Screen 4 matches the reference mechanics: scrubbed walking video, chapters on one continuous track entering from the right and exiting to the left, progress line, counter, simulated pull-back, final CTA with no exit. Chapter cards cross Gia's safe band only while moving; the final CTA card at rest stays clear of it.
 - [ ] Every module button under the text opens its brochure; the panel slides in from the right leaving a strip of the story visible, media column fixed, body column scrolling; copy matches 5.4a.3; story freezes while open; Escape/backdrop/close work; focus returns; scroll position is restored exactly.
@@ -700,6 +974,14 @@ Weight budget: videos ~15.8MB (hero ~5.5MB, walk ~10.3MB), brochure images ~0.7M
 
 > Build the header and footer per Section 5.5 in `css/site-shell.css` and `js/site-shell.js`.
 
+**A9 — Screen 2a**
+
+> Build Screen 2a per Section 5.2a in `index.html`, `css/screens.css`, and `js/gia-knows.js`, with the photo `media/gd-knows.webp`, reusing the `.gd-quote` component from Section 5.4a.2. Check the overlay never covers the man's face or Gia on the tablet. Keep the section `hidden` until visually verified. Do not change Screens 1–4.
+
+**A10 — Screen 2b**
+
+> Add `--gd-night-warm` and `--gd-night-warm-surface` to `css/tokens.css`, then build Screen 2b per Section 5.2b in `index.html`, `css/screens.css`, and `js/gia-side.js`, with `media/gd-side.webp` and `media/gia-avatar.webp`. Add the fifth header link `Your control` → `#screen-side` (Section 5.5), in the header and the footer nav. Measure contrast for every text colour on `--gd-night-warm` and on the panel surface and report it. Keep the section `hidden` until visually verified. Do not change Screens 1–4.
+
 **A8 — Audit**
 
 > Run the Section 8 checklist and report each item as pass or fail with file and line. Fix failures and re-run.
@@ -720,3 +1002,10 @@ Still open (the build does not wait for them — each is a TODO in place):
 4. A vector (SVG) or higher-resolution version of the logo. The supplied PNG is 1024px wide: enough for the header and a 420px footer on 2x screens, not for larger uses.
 5. Optional: a version of the tablet image without baked call controls.
 6. Optional: a longer walk video (12–16s) with a real camera pull-back at the end.
+
+Added on 2026-10-01:
+
+7. Screens 2a and 2b (Sections 5.2a and 5.2b): copy, order, photo-led layout, photos and the second dark accent screen approved 2026-10-01. Usage rights for the two new photos (made from the Gia brochure images) to be confirmed, as for item 3.
+8. Legal review of the Screen 2b small print `Glonari is designed to create value with its members, not sell their private profiles.` If it is not cleared, the line is removed; the screen works without it.
+9. Navigation: approved 2026-10-01, see Section 5.5. The fifth link `Your control` → `#screen-side` was added with Screen 2b (task A10) in the header and the footer. Checked at 1101, 1150, 1200 and 1280: the five links stay on one row, at least 98px from the logo and 48px from `Talk to Gia`; the 1100px hamburger breakpoint is unchanged.
+10. Re-measure contrast of Screen 1 blocks 2 and 3 against the warm veil (open since the 2026-10-01 veil change).

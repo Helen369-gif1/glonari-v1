@@ -48,7 +48,7 @@ function initGiaStory(sectionEl) {
   const card = (el, interactiveEl, buttonEl) => ({
     el, interactiveEl, buttonEl, rest: 0, width: 0, buttonLeft: 0, buttonWidth: 0, x: null, tx: null, interactive: null
   });
-  const modules = moduleEls.map((el) => card(el, el, el.querySelector(".gd-module__cta")));
+  const modules = moduleEls.map((el) => Object.assign(card(el, el, el.querySelector(".gd-module__cta")), { entrance: true }));
   const finalCard = finalEl
     ? card(finalEl.querySelector(".gd-story__final-inner") || finalEl, finalEl, finalEl.querySelector(".gd-story__final-cta"))
     : null;
@@ -94,6 +94,9 @@ function initGiaStory(sectionEl) {
     if (on === c.interactive) return;
     c.interactive = on;
     c.interactiveEl.inert = !on;
+    // Chapter cards play their entrance once, the first time they become
+    // interactive (approved 2026-10-02); the class never comes off.
+    if (on && c.entrance) c.el.classList.add("is-entered");
   }
 
   let scale = null;

@@ -477,3 +477,130 @@ body {
   width: 100%;
   height: auto;
 }
+
+/* ---------- Plaza presenter (Meet Gia) ----------
+   Same 540x910 frame as desktop's .presenter (figure at x 20-368,
+   y 20-892). Fixed px in the 440x956 frame, fitted by screenshot (brief
+   start 120/140 put the soles on the left planter's rim, so nudged
+   right/up): feet on the tiles just in front of the pool's front-left
+   rim, left of the globe, clear of the planter, logo still readable.
+   z-index 4 puts her above the fountain. Appearance only for now. */
+.mobile-presenter {
+  position: absolute;
+  left: 132px;
+  bottom: 150px;
+  width: 108px;
+  z-index: 4;
+  /* Tappable (Meet Gia link); main.js only accepts taps on opaque
+     silhouette pixels. Nothing tappable sits under its box (plaza and
+     fountain are pointer-events:none). The default focus outline stays:
+     there is no other visible focus indicator on mobile. */
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+.mobile-presenter img,
+.mobile-presenter video {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+/* Video by default; the still poster only where WebM alpha can't render
+   (html.no-alpha-webm, set in index.html's <head>). */
+.mobile-presenter .presenter__poster,
+.no-alpha-webm .mobile-presenter .presenter__video {
+  display: none;
+}
+.no-alpha-webm .mobile-presenter .presenter__poster {
+  display: block;
+}
+/* Ground shadow, ported from desktop .presenter::before/::after (same
+   percentages of the frame, multiply). Blur radii scaled down with the
+   figure (~108px wide here vs ~170px on a 1600px desktop). */
+.mobile-presenter::before,
+.mobile-presenter::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  border-radius: 50%;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+.mobile-presenter::before {
+  left: 6%;
+  top: 93.6%;
+  width: 82%;
+  height: 7%;
+  background: radial-gradient(ellipse 50% 50% at 42% 50%,
+    rgba(74, 46, 24, 0.32) 0%,
+    rgba(74, 46, 24, 0.17) 45%,
+    rgba(74, 46, 24, 0) 100%);
+  filter: blur(4px);
+  transform: rotate(-5deg);
+}
+.mobile-presenter::after {
+  left: 1.5%;
+  top: 94.9%;
+  width: 46%;
+  height: 2.4%;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%,
+    rgba(48, 28, 14, 0.68) 0%,
+    rgba(48, 28, 14, 0.36) 45%,
+    rgba(48, 28, 14, 0) 100%);
+  filter: blur(1.5px);
+  transform: rotate(-8deg);
+}
+.mobile-presenter .presenter__video,
+.mobile-presenter .presenter__poster {
+  position: relative;
+  z-index: 1;
+}
+/* Edge lift against the light tiles: a thin dark contour plus a faint warm
+   halo, both following the alpha silhouette. On the media, not on
+   .mobile-presenter, so the ::before/::after ground shadows keep
+   multiplying onto the tiles. A doubled contour read as an editor stroke
+   at 440x956, so it's a single 1px layer. */
+.mobile-presenter .presenter__video,
+.mobile-presenter .presenter__poster {
+  filter:
+    drop-shadow(0 0 1px rgba(40, 24, 12, 0.55))
+    drop-shadow(0 0 4px rgba(255, 220, 160, 0.35));
+  transform-origin: 23.5% 96.7%;
+  transition: transform 0.14s ease, filter 0.14s ease;
+}
+/* Tap feedback (Meet Gia link), toggled by main.js while a finger is down
+   on the silhouette and held through the exit fade: same language as the
+   desktop .presenter.is-hovered (golden alpha-following glow, small scale
+   from the soles), but a deeper, denser gold than desktop's: the cream
+   outfit on the light tiles swallows a pale glow at ~108px. */
+.mobile-presenter.is-pressed .presenter__video,
+.mobile-presenter.is-pressed .presenter__poster {
+  transform: scale(1.08);
+  filter:
+    drop-shadow(0 0 1.5px rgba(214, 150, 40, 1))
+    drop-shadow(0 0 6px rgba(255, 176, 60, 1))
+    drop-shadow(0 0 14px rgba(255, 150, 40, 0.75))
+    brightness(1.06);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mobile-presenter .presenter__video,
+  .mobile-presenter .presenter__poster {
+    transition: none;
+  }
+}
+
+/* Same cut-to-black as the root styles.css #exit-transition (same colour
+   and 0.5s fade), so it joins meet-gia's dark entry curtain. */
+#exit-transition {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10000;
+  transition: opacity 0.5s ease;
+}
+
+#exit-transition.active {
+  opacity: 1;
+  pointer-events: all;
+}

@@ -29,6 +29,26 @@
   // manual `resize` listener; the SAME MediaQueryList object is reused
   // for both the one-time check and this listener, rather than
   // constructing a second one for the same query.
+  // Returning to the Campus (2026-10-12): the branded intro is only for
+  // a fresh entry. A browser Back/Forward to this page, or arriving from
+  // one of the sub-sites (their "← Glonari" back link, or any link out of
+  // meet-gia/, digital-banker/, global-dream/, global-reserve/), lands
+  // straight in the Campus. Same-origin referrer only, so an outside
+  // link still gets the intro, and a manual reload (which keeps the old
+  // referrer) still shows it.
+  function glonariReturningToCampus() {
+    try {
+      var nav = performance.getEntriesByType('navigation')[0];
+      if (nav && nav.type === 'back_forward') return true;
+      if ((nav && nav.type === 'reload') || !document.referrer) return false;
+      var ref = new URL(document.referrer);
+      return ref.origin === location.origin &&
+        /\/(meet-gia|digital-banker|global-dream|global-reserve)\//.test(ref.pathname);
+    } catch (e) {
+      return false;
+    }
+  }
+
   var mobileQuery = window.matchMedia('(max-width: 767px)');
 
   function goMobile() {
@@ -36,6 +56,10 @@
   }
 
   if (mobileQuery.matches) {
+    // A returning visit forwarded to mobile carries its "skip the intro"
+    // decision along: after .replace() the mobile page only sees this
+    // page as its referrer and a plain 'navigate' type.
+    if (glonariReturningToCampus()) sessionStorage.setItem('glonariSkipIntro', '1');
     goMobile();
   } else {
     var pendingMobileRedirect = null;
@@ -73,9 +97,11 @@
   // that sets it) suppresses the intro on its destination page. A normal
   // load, a manual reload, or a redirect from the initial synchronous
   // check further up never has this marker set, so they always show it.
+  // Returning to the Campus (see glonariReturningToCampus above) skips it
+  // too.
   if (sessionStorage.getItem('glonariSkipIntro')) {
     sessionStorage.removeItem('glonariSkipIntro');
-  } else {
+  } else if (!glonariReturningToCampus()) {
     document.documentElement.classList.add('intro-active');
   }
 </script>

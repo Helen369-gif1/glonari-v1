@@ -52,6 +52,130 @@
   const OVERLAP = 30;
   const STEP = SLOT_WIDTH - OVERLAP;
 
+  // Plaza presenter: its <source> ships as data-src. Under
+  // html.no-alpha-webm (WebKit, see index.html <head>) the video is removed
+  // unfetched and only the poster shows; elsewhere the src is filled in and
+  // loaded. Not played yet — the gesture is a later step.
+  const presenterVideo = document.querySelector('.mobile-presenter .presenter__video');
+  if (presenterVideo) {
+    if (document.documentElement.classList.contains('no-alpha-webm')) {
+      presenterVideo.remove();
+    } else {
+      presenterVideo.querySelectorAll('source[data-src]').forEach((source) => {
+        source.src = source.dataset.src;
+      });
+      presenterVideo.load();
+    }
+  }
+
+  // ---- Presenter → Meet Gia (tap on the silhouette, Enter/Space) ----
+  // Same approach as the desktop main.js: alpha hit-testing against
+  // ../assets/presenter-hitmask.png (same 540x910 frame as the video and
+  // poster, union of every arm position, no ground shadow), sampled
+  // against whichever media is shown. A tap on a transparent part of the
+  // box does nothing. Then the same #exit-transition fade as desktop's
+  // navigateWithFade().
+  const presenterEl = document.querySelector('.mobile-presenter');
+  const exitTransition = document.getElementById('exit-transition');
+  const MEET_GIA_URL = '../meet-gia/index.html';
+  // Matches #exit-transition's 0.5s CSS fade plus a small margin.
+  const EXIT_FADE_MS = 550;
+  const PRESENTER_ALPHA_THRESHOLD = 20; // 0-255, as desktop's HOVER_ALPHA_THRESHOLD
+
+  function navigateWithFade(url) {
+    if (!exitTransition) {
+      window.location.href = url;
+      return;
+    }
+    exitTransition.classList.add('active');
+    window.setTimeout(() => {
+      window.location.href = url;
+    }, EXIT_FADE_MS);
+  }
+
+  // Back button restoring this page from bfcache would otherwise show it
+  // still faded to black.
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted && exitTransition) exitTransition.classList.remove('active');
+  });
+
+  if (presenterEl) {
+    let maskCtx = null;
+    const maskImg = new Image();
+    maskImg.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = maskImg.naturalWidth;
+      canvas.height = maskImg.naturalHeight;
+      maskCtx = canvas.getContext('2d', { willReadFrequently: true });
+      maskCtx.drawImage(maskImg, 0, 0);
+    };
+    maskImg.src = '../assets/presenter-hitmask.png';
+
+    const hitOnSilhouette = (clientX, clientY) => {
+      if (!maskCtx) return false;
+      const media = presenterEl.querySelector('.presenter__video') || presenterEl.querySelector('.presenter__poster img');
+      if (!media) return false;
+      const rect = media.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return false;
+      const lx = (clientX - rect.left) / rect.width;
+      const ly = (clientY - rect.top) / rect.height;
+      if (lx < 0 || lx > 1 || ly < 0 || ly > 1) return false;
+      const w = maskCtx.canvas.width;
+      const h = maskCtx.canvas.height;
+      const ix = Math.min(w - 1, Math.floor(lx * w));
+      const iy = Math.min(h - 1, Math.floor(ly * h));
+      try {
+        return maskCtx.getImageData(ix, iy, 1, 1).data[3] > PRESENTER_ALPHA_THRESHOLD;
+      } catch (err) {
+        return false; // tainted canvas (file://) — fail closed
+      }
+    };
+
+    // Touch/press feedback: the same golden glow + small scale as the
+    // desktop presenter's hover (styles.css .mobile-presenter.is-pressed),
+    // shown while a finger is down on the silhouette. JS-driven class, not
+    // `:active`, for the same iOS Safari reason as .building-frame's
+    // is-pressed. Kept on through the exit fade after a successful tap so
+    // the highlight is still visible as the screen goes dark.
+    let navigating = false;
+    const setPressed = (pressed) => {
+      if (navigating) return;
+      presenterEl.classList.toggle('is-pressed', pressed);
+    };
+    presenterEl.addEventListener('pointerdown', (event) => {
+      if (hitOnSilhouette(event.clientX, event.clientY)) setPressed(true);
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((type) => {
+      presenterEl.addEventListener(type, () => setPressed(false));
+    });
+
+    const openMeetGia = () => {
+      presenterEl.classList.add('is-pressed');
+      navigating = true;
+      navigateWithFade(MEET_GIA_URL);
+    };
+
+    // A touch tap produces a click with real coordinates; a swipe that
+    // starts on the figure does not.
+    presenterEl.addEventListener('click', (event) => {
+      if (!hitOnSilhouette(event.clientX, event.clientY)) return;
+      openMeetGia();
+    });
+    presenterEl.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'Spacebar') return;
+      event.preventDefault(); // Space must not also scroll the page
+      openMeetGia();
+    });
+
+    // Back button restoring this page from bfcache: drop the highlight
+    // left on for the exit fade.
+    window.addEventListener('pageshow', (event) => {
+      if (!event.persisted) return;
+      navigating = false;
+      presenterEl.classList.remove('is-pressed');
+    });
+  }
+
   const track = document.getElementById('carousel-track');
   const dotsContainer = document.getElementById('carousel-dots');
   if (!track) return;

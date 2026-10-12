@@ -84,6 +84,7 @@ Add these tokens to `css/tokens.css`. Reuse them instead of repeating raw values
   --gd-line-soft: rgba(91, 72, 49, 0.12);
   --gd-shadow-soft: 0 14px 40px rgba(57, 43, 24, 0.08);
   --gd-shadow-tablet: 0 24px 48px rgba(57, 43, 24, 0.14); /* drop-shadow() on the Screen 3 tablet image only */
+  --gd-shadow-card: 0 18px 48px rgba(57, 43, 24, 0.18), 0 2px 6px rgba(57, 43, 24, 0.10); /* Screens 2a (memory panel and quote card, approved 2026-10-01) and 4 (chapter cards, approved 2026-10-02) only */
 
   /* Type — unchanged */
   --gd-font-ui: "IBM Plex Sans", system-ui, sans-serif;
@@ -117,7 +118,7 @@ Use the palette with the following hierarchy:
 
 1. `--gd-bg` is the default page background.
 2. `--gd-surface` is the main card, panel, and content surface.
-3. `--gd-bg-soft` is used to alternate long sections and create rhythm without introducing dark blocks.
+3. `--gd-bg-soft` is used to alternate long sections and create rhythm. Dark accent screens are a separate, limited tool governed only by Section 16.1.
 4. `--gd-gold` is the primary brand accent for buttons, key lines, small markers, selected states, and important data.
 5. `--gd-gold-deep` is used where gold must carry readable text or icon contrast.
 6. `--gd-sky` is a secondary accent. It should appear selectively in small interface details, links, progress indicators, or atmospheric visual elements.
@@ -523,7 +524,7 @@ Then specify exactly one screen or one bounded system task.
 
 Approved by the designer on 2026-09-28. These exceptions apply only where stated. Everything else in this document remains in force.
 
-### 16.1 Single dark accent screen (Screen 2 only)
+### 16.1 Dark accent screens (Screens 2 and 2b)
 
 One dark screen is permitted on the page, as a secondary accent. It is Screen 2 ("What Gia does"). No other section, card, or component may use a dark background, except the small dark chip permitted in 16.2.
 
@@ -541,7 +542,30 @@ Add these tokens to `css/tokens.css`. They are used only by Screen 2 and by the 
 }
 ```
 
-Rules for the dark screen:
+> **Approved (2026-10-01)** — replaces the single-dark-screen rule above. The page grew from four screens to six, and one dark screen no longer gives it a visible rhythm. The Gia brochure is dark throughout, so a second dark screen also brings the page closer to it.
+>
+> **Dark accent screens (Screens 2 and 2b).** Two dark accent screens are permitted on the page: Screen 2 ("What Gia does") and Screen 2b ("She’s on your side"). No other section, card, or component may use a dark background, except the small dark chip in 16.2, the brochure panel details in 16.7, and the dark panel parts of Screen 2b in 16.10. Legibility veils (16.4) are not dark screens.
+>
+> 1. **Never adjacent.** At least one full light section sits between two dark screens. Two dark screens in a row read as one heavy block and lose the rhythm they exist to create.
+> 2. **At most two on this page.** Global Dream is the light member of the Glonari family. If dark screens reach half the page, it stops being distinct from Global Reserve and Digital Banker. A third dark screen (for example a dark final CTA) needs its own explicit approval.
+> 3. **Each dark screen has its own composition.** Screen 2: text left, rail right. Screen 2b: panel left, text right. A dark screen must not repeat the layout of the other.
+> 4. **Each dark screen has its own reason.** Dark marks a change of register (Screen 2: from the cinematic hero to explanation; Screen 2b: protection and control). It is not used for variety alone.
+> 5. **Shared dark rules.** Everything listed below under "Rules for the dark screen" applies to both dark screens.
+>
+> Tokens for Screen 2b, added to the dark accent block in `css/tokens.css`:
+>
+> ```css
+> :root {
+>   --gd-night-warm: color-mix(in srgb, var(--gd-gold-deep) 12%, var(--gd-night));          /* about #23201D: Screen 2b background */
+>   --gd-night-warm-surface: color-mix(in srgb, var(--gd-night-text) 5%, var(--gd-night-warm)); /* about #2E2B27: Screen 2b panel */
+> }
+> ```
+>
+> `--gd-night-warm` is a warm charcoal: related to `--gd-night` (Screen 2) but not identical, and sharing the warmth of the Screen 1 umber veil. Measured contrast on `--gd-night-warm`: `--gd-night-text` 14.6:1, `--gd-night-text-2` 8.2:1, `--gd-night-text-3` 4.4:1 (large text and non-text only), `--gd-gold` 5.1:1. On `--gd-night-warm-surface`: `--gd-night-text` 12.7:1, `--gd-night-text-2` 7.4:1, `--gd-gold` 4.4:1, so gold carries no small text on the panel surface, only glyphs and large text.
+>
+> **Approved by the user on 2026-10-01 (task A10).** One more Screen 2b token, in the same dark accent block: `--gd-shadow-night-panel: 0 24px 60px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.35);` — the request panel's depth over the photo, Screen 2b only. Screen 2b also carries the connection glows of 16.9 (phone halo, thread, nodes, particle, switch pulse); the "no glow effects" rule below therefore applies to Screen 2 only. Built values measured with the tokens above: `--gd-night-warm` #23201D, `--gd-night-warm-surface` #2E2A27; `--gd-night-text` 14.65:1 / 12.81:1, `--gd-night-text-2` 8.20:1 / 7.40:1, `--gd-gold` 5.05:1 / 4.42:1.
+
+Rules for the dark screens (both Screen 2 and Screen 2b):
 
 - Gold accent on dark is `--gd-gold` (not `--gd-gold-deep`, which is too dark on `--gd-night`). `--gd-gold` on `--gd-night` measures approximately 5.5:1 and may carry text.
 - Primary button on dark: `--gd-gold` fill with `--gd-text-primary` text.
@@ -572,6 +596,14 @@ Screen 1 (hero scrub) and Screen 4 (horizontal story) are the two approved pinne
 ### 16.6 Screen 4 module button dot
 
 The four Screen 4 module buttons (brochure triggers) carry a trailing 6px `--gd-gold` dot as a decorative mark. It is the only decorative mark permitted inside a button.
+
+> **Approved by the user on 2026-10-02 — Screen 4 chapter cards.** For the four chapter cards (`.gd-module`) only; the final CTA card keeps the shared surface, border and no shadow.
+>
+> - **Surface.** Unchanged: `--gd-surface` at 92%, no blur. This is the one translucent card on the page (16.10's "always solid" applies to Screens 2a and 2b only).
+> - **Border and bar.** 1px `--gd-gold-line` border and a 3px `--gd-gold` bar along the top edge, clipped by the 8px radius.
+> - **Depth.** `var(--gd-shadow-card)` plus a contact shadow `0 10px 30px` in `--gd-night` at 22%. This overrides "no shadow by default" (Section 8.1) for these cards; `--gd-shadow-card` is no longer Screen 2a only.
+> - **Learn more button.** 1px `--gd-gold` border; hover and focus: `--gd-gold-deep` border and a soft `0 0 0 4px var(--gd-gold-soft)` glow, 200ms, with the standard focus outline kept. This glow is permitted on these four buttons only.
+> - **Entrance.** Once per card, when it first becomes interactive in the pinned story: `opacity 0 → 1`, `y: 16 → 0`, and the gold bar draws left to right (`scaleX 0 → 1`), 600ms, design-system ease. The rise never changes the track position. Reduced motion: at rest, bar drawn. Values and contrast are in build spec 5.4.
 
 ### 16.7 Screen 4 brochure panel
 
@@ -606,3 +638,41 @@ Approved with the Screen 3 rework (visual target `references/screen-3-target.png
 - **Orbit decoration.** A static dotted ellipse around the tablet in 1px dotted `--gd-gold-line`, one 6px glowing `--gd-gold` dot at its top, and a few small `--gd-gold` specks (3–4px, 30–45% opacity). It never animates or floats, and it is hidden in the stacked layout.
 - **Tablet shadow.** The tablet image keeps its single depth shadow, `drop-shadow(var(--gd-shadow-tablet))` (Section 3). The glows above are the only other depth effects on the screen.
 - Gold remains the only accent in these visuals; no sky blue is used in them.
+
+> **Approved by the user on 2026-10-01 — extended to Screen 2a.** The connection visuals above also apply on Screen 2a, from 1200px up, as gold threads between the memory panel, Gia's tablet in the photo and the quote card. Screen 2a uses the same glow colour (it declares the same `--gd-connect-glow` value on its own section), the same 12px ringed nodes with a pulse ring and the same travelling 6px particle. Its threads are 1.5px rather than 2px, since they run over a photograph and sit close together; otherwise they follow the line rules above (`--gd-gold`, round caps, one `drop-shadow(0 0 4px …)` on the thread layer). Threads never cross a face or Gia on the tablet screen, and they are hidden wherever the cards leave the photo (below 1200px). Icon circles and the orbit decoration remain Screen 3 only. Geometry and timing are in build spec Section 5.2a ("Screen 2a rework").
+
+> **Approved by the user on 2026-10-01 — extended to Screen 2b.** The connection visuals also apply on the dark Screen 2b, with the same line weight, glow and node style as Screen 2a: one 1.5px `--gd-gold` thread with round caps and one `drop-shadow(0 0 4px …)` in the shared glow colour (Screen 2b declares the same `--gd-connect-glow` value on its own section), joining a 12px ringed node on the phone in the man's hand to a 12px ringed node on the request panel's top border, plus the travelling 6px particle. Added for Screen 2b only: a soft radial `--gd-gold` halo on the phone, `mix-blend-mode: screen`, made of two layers in one element: an outer glow about 260px across (`--gd-gold` at 60% at its centre, max opacity .6) and a brighter inner core about 90px across (`--gd-gold` at 45%); it pulses once (`scale 1 → 1.8`) on entry and each time the particle arrives (raised by the user on 2026-10-02). It never reaches the man's face: it stays 260px except where it or its 1.8× pulse would touch the face, where it shrinks (the core keeps its ratio); measured sizes are in build spec 5.2b, a 2px `--gd-gold` scan line across each request row, and one soft gold glow pulse on each switch track as it turns on. The thread never crosses the man's face; it exists only while photo and panel sit side by side (1200px and up); stacked, the halo stays and the thread and nodes are dropped. Icon circles and the orbit decoration remain Screen 3 only. Geometry and timing are in build spec Section 5.2b ("Screen 2b richer treatment").
+
+### 16.10 Screens 2a and 2b photographs and product panels (approved 2026-10-01)
+
+Applies only to Screen 2a (photo, memory panel, quote card) and Screen 2b (photo, request panel, avatar, controls). Geometry, copy and timing are in build spec Sections 5.2a and 5.2b.
+
+- **Photographs.** Each screen is led by one large photo of a member with Gia nearby, so the copy never stands alone as a text block. 2a: inside the container, radius 8px. 2b: full-bleed to the left, top and bottom edge of the section, no radius. No veils, gradients, colour overlays or filters on either photo: the panels carry their own contrast. One gentle scale-in on entry (`1.04 → 1`), no parallax, no pinning.
+- **Panels over photographs.** Panels and quote cards may sit on top of the photos only where the photo carries no important subject; they never cover a face, Gia, or the device the member is using. Their surfaces are always solid, never translucent.
+- **Gia avatar (2b).** `media/gia-avatar.webp` as a 32px circle with a 1px `--gd-gold-line` ring, no shadow, no glow, only in the role row of Gia's quote card on Screen 2b.
+- **Panels.** Precise, not glassy (Section 8.4). 2a: `--gd-surface`, 1px `--gd-line`, radius 8px, `--gd-shadow-soft`. 2b: `--gd-night-warm-surface`, 1px `--gd-night-line`, radius 8px, no shadow. No blur, no glow, no gradient fill on either. Maximum width 480px.
+- **Panel labels.** The mono label with a 6px `--gd-gold` square, as on the Screen 4 chapter labels.
+- **Row highlight (2a).** `--gd-gold-soft` background on a row, radius 4px. It marks memories in use; it is not a large gold fill.
+- **Status glyphs (2b).** 12px solid inline SVG: check in `--gd-gold`, dash and cross in `--gd-night-text-2`. No red, no green (Section 16.3).
+- **Quote card on dark (2b).** The `.gd-quote` component from 16.7 / build spec 5.4a.2 with dark values: `--gd-night-warm` background, 1px `--gd-night-line` border, role label in `--gd-gold`, quote in `--gd-night-text`, outcome line (if any) in `--gd-gold`. Same radius, padding and type as the light card.
+- **Switches (2b).** An approved exception to "no pill buttons" (Section 8.2), because a switch is not a button style: track 44×24px, radius 12px; on: `--gd-gold` track, 18px `--gd-night` thumb (5.5:1 against the track); off: transparent track, 1px `--gd-night-line` border, `--gd-night-text-3` thumb. Thumb moves by `transform`, 200ms. Focus ring `--gd-gold`, as for other controls on dark. Switches appear only on Screen 2b.
+- Sky blue is not used in either panel.
+
+> **Approved by the user on 2026-10-01 — Screen 2a rework.** For Screen 2a only, replacing the 2a values above:
+>
+> - **Memory panel (2a).** `--gd-surface-elevated`, 1px `--gd-gold-line` border, radius 8px, a 3px `--gd-gold` bar along the top edge inside the radius, `box-shadow: var(--gd-shadow-card)`; on the photo it adds a darker contact shadow `0 8px 24px` in `--gd-night` at 28%. Still solid, no blur, no gradient fill; maximum width 480px.
+> - **Memory rows (2a).** The marker is an 8px ring (2px `--gd-gold`) with a `--gd-gold` centre. A highlighted row has a `--gd-gold-soft` background, radius 4px, and its text in `--gd-gold-deep`, weight 500.
+> - **Quote card (2a).** `--gd-surface-elevated` background, 1px `--gd-gold` border, `box-shadow: var(--gd-shadow-card)`.
+> - **Gia avatar (2a).** `media/gia-avatar.webp` as a 40px circle with a 2px `--gd-gold` ring, in the role row of the 2a quote card. The 2b avatar keeps its 32px size and 1px `--gd-gold-line` ring.
+> - **Gold threads (2a).** Permitted on Screen 2a under 16.9.
+> - Photos: the 2a photo's entry scale-in is `1.08 → 1` (2b keeps `1.04 → 1`).
+
+> **Approved by the user on 2026-10-01 — Screen 2b richer treatment (task A10).** For Screen 2b only, replacing the 2b values above:
+>
+> - **Request panel (2b).** `--gd-night-warm-surface`, 1px `--gd-gold-line` border, radius 8px, a 3px `--gd-gold` bar along the top edge inside the radius, `box-shadow: var(--gd-shadow-night-panel)`. Still solid, no blur, no gradient fill; maximum width 420px on the photo, 480px at most anywhere.
+> - **Gia avatar (2b).** 40px circle with a 2px `--gd-gold` ring, as on 2a (replaces the 32px / 1px `--gd-gold-line` avatar).
+> - **Quote card on dark (2b).** `--gd-night-warm` background, 1px `--gd-gold-line` border, role label `GIA` in `--gd-gold`, quote in `--gd-night-text`.
+> - **Withheld rows (2b).** Once a row's status shows it is not shared, its item text dims to `--gd-night-text-2` (300ms). Only a row the member withholds (row 1, when `What she can share` is off) is also struck through, with a 1px `--gd-night-text-3` line drawn left to right (300ms); rows Gia withholds by her own judgement (rows 2 and 3) are dimmed, never struck through (approved by the user on 2026-10-02). Row 1's check glyph is `--gd-gold`.
+> - **Text column (2b).** Key line in `--gd-gold`; a 48px × 1px `--gd-gold` rule 24px above the H2.
+> - **Glows (2b).** Phone halo, thread, nodes, particle, row scan line and switch glow pulse, as in 16.9.
+> - Photos: the 2b photo's entry scale-in is also `1.08 → 1`. Two-column crop `object-position: 90% 30%`; the stacked band is full width with `max-height: max(80svh, 72vw)` (approved 2026-10-02, build spec 5.2b).

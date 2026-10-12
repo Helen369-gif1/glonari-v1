@@ -69,6 +69,7 @@
         <ul class="gd-header__links">
           <li><a class="gd-header__link" href="#screen-1">Meet Gia</a></li>
           <li><a class="gd-header__link" href="#screen-2">How she helps</a></li>
+          <li><a class="gd-header__link" href="#screen-side">Your control</a></li>
           <li><a class="gd-header__link" href="#screen-3">Everything connects</a></li>
           <li><a class="gd-header__link" href="#screen-4">In your life</a></li>
         </ul>
@@ -154,6 +155,137 @@
           </ol>
         </div>
       </div>
+    </section>
+
+    <!-- Screen 2a — She knows you (build spec 5.2a). -->
+    <section id="screen-knows" class="gd-section gd-knows" data-screen="knows">
+      <div class="gd-container">
+        <div class="gd-knows__header">
+          <h2 class="gd-h2" data-reveal>AI should know more than your question. It should know you.</h2>
+          <p class="gd-lead gd-knows__body" data-reveal data-reveal-delay="1">Most AI starts over every time you ask. Gia is built as an ongoing relationship. She remembers what you want her to remember — and becomes more helpful over time.</p>
+        </div>
+
+        <div class="gd-knows__visual">
+          <div class="gd-knows__stage">
+            <img class="gd-knows__image" src="media/gd-knows.webp" alt="A man relaxing at home in the evening, talking with Gia on a tablet" width="3640" height="2048" loading="lazy" decoding="async">
+            <p class="gd-knows__pending" aria-hidden="true">Media pending<br>media/gd-knows.webp</p>
+          </div>
+
+          <svg class="gd-knows__threads" aria-hidden="true" focusable="false"></svg>
+
+          <div class="gd-knows__overlay">
+            <figure class="gd-memory">
+              <figcaption class="visually-hidden">An example of what Gia remembers and how she uses it.</figcaption>
+              <p class="gd-module__label">WHAT GIA REMEMBERS</p>
+              <ul class="gd-memory__list">
+                <li class="gd-memory__item">Moving to the city in spring</li>
+                <li class="gd-memory__item" data-used>Prefers a quiet neighbourhood</li>
+                <li class="gd-memory__item" data-used>Home budget agreed in March</li>
+                <li class="gd-memory__item" data-used>Daughter starts school in September</li>
+                <li class="gd-memory__item">Works from home three days a week</li>
+              </ul>
+            </figure>
+
+            <figure class="gd-quote gd-knows__quote">
+              <figcaption class="gd-quote__role gd-knows__role"><span class="gd-knows__card-node" aria-hidden="true"></span><img class="gd-knows__avatar" src="media/gia-avatar.webp" alt="" width="256" height="256" loading="lazy" decoding="async">GIA</figcaption>
+              <blockquote class="gd-quote__text"><p>“The home you saved just dropped in price. It still fits your budget, and it’s close to the school. Want me to arrange a viewing?”</p></blockquote>
+              <p class="gd-quote__outcome"><span>Gia remembered.</span> <span>Gia noticed.</span> <span>Gia acted.</span></p>
+            </figure>
+          </div>
+
+          <div class="gd-knows__closing">
+            <dl class="gd-knows__stages">
+              <div class="gd-knows__step" data-reveal>
+                <dt class="gd-eyebrow">AT FIRST</dt>
+                <dd class="gd-body">What you want. What matters. How you like things done.</dd>
+              </div>
+              <div class="gd-knows__step" data-reveal data-reveal-delay="1">
+                <dt class="gd-eyebrow">OVER TIME</dt>
+                <dd class="gd-body">Your goals, preferences, routines and plans.</dd>
+              </div>
+            </dl>
+            <p class="gd-data gd-knows__key" data-reveal data-reveal-delay="2">She doesn’t just know your question. She knows you.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 2b — She’s on your side, second dark accent (build spec 5.2b). -->
+    <section id="screen-side" class="gd-side" data-screen="side">
+      <div class="gd-side__text">
+        <div class="gd-side__inner">
+          <h2 class="gd-h2 gd-side__title" data-reveal>She’s on your side.</h2>
+          <p class="gd-lead gd-side__body" data-reveal data-reveal-delay="1">Gia works under your direction. You decide what she remembers, what she can use and what she can share.</p>
+          <ul class="gd-side__controls" data-reveal data-reveal-delay="2">
+            <li class="gd-side__control">
+              <span class="gd-body gd-side__control-label" id="side-control-remembers">What Gia remembers</span>
+              <button type="button" class="gd-switch" role="switch" aria-checked="true" aria-labelledby="side-control-remembers"><span class="gd-switch__glow" aria-hidden="true"></span><span class="gd-switch__thumb" aria-hidden="true"></span></button>
+            </li>
+            <li class="gd-side__control">
+              <span class="gd-body gd-side__control-label" id="side-control-use">What she can use</span>
+              <button type="button" class="gd-switch" role="switch" aria-checked="true" aria-labelledby="side-control-use"><span class="gd-switch__glow" aria-hidden="true"></span><span class="gd-switch__thumb" aria-hidden="true"></span></button>
+            </li>
+            <li class="gd-side__control">
+              <span class="gd-body gd-side__control-label" id="side-control-approval">What needs your approval</span>
+              <button type="button" class="gd-switch" role="switch" aria-checked="true" aria-labelledby="side-control-approval"><span class="gd-switch__glow" aria-hidden="true"></span><span class="gd-switch__thumb" aria-hidden="true"></span></button>
+            </li>
+            <li class="gd-side__control">
+              <span class="gd-body gd-side__control-label" id="side-control-share">What she can share</span>
+              <button type="button" class="gd-switch" role="switch" aria-checked="true" aria-labelledby="side-control-share" data-share><span class="gd-switch__glow" aria-hidden="true"></span><span class="gd-switch__thumb" aria-hidden="true"></span></button>
+            </li>
+          </ul>
+          <p class="visually-hidden">Example settings. Nothing is saved.</p>
+          <p class="gd-data gd-side__key" data-reveal data-reveal-delay="3">Your Gia. Your information. Your decision.</p>
+          <p class="gd-small gd-side__note" data-reveal data-reveal-delay="4">Glonari is designed to create value with its members, not sell their private profiles.</p>
+        </div>
+      </div>
+
+      <div class="gd-side__media">
+        <img class="gd-side__image" src="media/gd-side.webp" alt="The same man in the evening, smiling as he checks a message from Gia on his phone" width="2460" height="3072" loading="lazy" decoding="async">
+        <p class="gd-side__pending" aria-hidden="true">Media pending<br>media/gd-side.webp</p>
+        <span class="gd-side__halo" aria-hidden="true"></span>
+        <span class="gd-side__halo gd-side__halo--pulse" aria-hidden="true"></span>
+      </div>
+
+      <svg class="gd-side__thread" aria-hidden="true" focusable="false"></svg>
+
+      <figure class="gd-request">
+        <figcaption class="visually-hidden">An example of Gia sharing only the information a company needs.</figcaption>
+        <span class="gd-request__node" aria-hidden="true"></span>
+        <p class="gd-module__label gd-request__label">A COMPANY REQUESTS</p>
+        <p class="gd-small gd-request__context">To arrange your home viewing, the agency asks for:</p>
+        <ul class="gd-request__list">
+          <li class="gd-request__row" data-share-row>
+            <span class="gd-request__item">Your name and contact details</span>
+            <span class="gd-request__status" aria-live="polite">
+              <svg class="gd-request__glyph gd-request__glyph--check" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2 6.4 4.8 9.2 10 3.2"/></svg>
+              <svg class="gd-request__glyph gd-request__glyph--cross" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M3 3l6 6M9 3 3 9"/></svg>
+              <span class="gd-request__status-text">Shared</span>
+            </span>
+            <span class="gd-request__scan" aria-hidden="true"></span>
+          </li>
+          <li class="gd-request__row is-withheld">
+            <span class="gd-request__item">Your purchase history</span>
+            <span class="gd-request__status">
+              <svg class="gd-request__glyph" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2.5 6h7"/></svg>
+              <span class="gd-request__status-text">Not needed</span>
+            </span>
+            <span class="gd-request__scan" aria-hidden="true"></span>
+          </li>
+          <li class="gd-request__row is-withheld">
+            <span class="gd-request__item">Your location history</span>
+            <span class="gd-request__status">
+              <svg class="gd-request__glyph" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M3 3l6 6M9 3 3 9"/></svg>
+              <span class="gd-request__status-text">Not shared</span>
+            </span>
+            <span class="gd-request__scan" aria-hidden="true"></span>
+          </li>
+        </ul>
+        <figure class="gd-quote gd-side__quote">
+          <figcaption class="gd-quote__role gd-side__role"><img class="gd-side__avatar" src="media/gia-avatar.webp" alt="" width="256" height="256" loading="lazy" decoding="async">GIA</figcaption>
+          <blockquote class="gd-quote__text"><p>“They don’t need that information to complete this. I haven’t shared it.”</p></blockquote>
+        </figure>
+      </figure>
     </section>
 
     <!-- Screen 3 — Everything connects (build spec 5.3). -->
@@ -554,6 +686,7 @@
       <ul class="gd-footer__links">
         <li><a class="gd-footer__link" href="#screen-1">Meet Gia</a></li>
         <li><a class="gd-footer__link" href="#screen-2">How she helps</a></li>
+        <li><a class="gd-footer__link" href="#screen-side">Your control</a></li>
         <li><a class="gd-footer__link" href="#screen-3">Everything connects</a></li>
         <li><a class="gd-footer__link" href="#screen-4">In your life</a></li>
       </ul>
@@ -568,6 +701,8 @@
   <script src="js/hero-scrub.js"></script>
   <script src="js/reveal.js"></script>
   <script src="js/gia-conversation.js"></script>
+  <script src="js/gia-knows.js"></script>
+  <script src="js/gia-side.js"></script>
   <script src="js/gia-connect.js"></script>
   <script src="js/gia-story.js"></script>
   <script src="js/brochure.js"></script>

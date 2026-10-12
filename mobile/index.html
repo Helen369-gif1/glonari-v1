@@ -38,6 +38,26 @@
     // and closing the "deep-links directly into mobile/index.html stays
     // there" gap) AND live via the same 'change'-event + debounce pattern
     // as the forward gate, so a rotation/resize after load is caught too.
+    // Returning to the Campus (2026-10-12): the branded intro is only for
+    // a fresh entry. A browser Back/Forward to this page, or arriving from
+    // one of the sub-sites (their "← Glonari" back link, or any link out of
+    // meet-gia/, digital-banker/, global-dream/, global-reserve/), lands
+    // straight in the Campus. Same-origin referrer only, so an outside
+    // link still gets the intro, and a manual reload (which keeps the old
+    // referrer) still shows it.
+    function glonariReturningToCampus() {
+      try {
+        var nav = performance.getEntriesByType('navigation')[0];
+        if (nav && nav.type === 'back_forward') return true;
+        if ((nav && nav.type === 'reload') || !document.referrer) return false;
+        var ref = new URL(document.referrer);
+        return ref.origin === location.origin &&
+          /\/(meet-gia|digital-banker|global-dream|global-reserve)\//.test(ref.pathname);
+      } catch (e) {
+        return false;
+      }
+    }
+
     var desktopQuery = window.matchMedia('(min-width: 768px) and (hover: hover) and (pointer: fine)');
 
     function goDesktop() {
@@ -45,6 +65,8 @@
     }
 
     if (desktopQuery.matches) {
+      // Carry a returning visit's "skip the intro" over the .replace().
+      if (glonariReturningToCampus()) sessionStorage.setItem('glonariSkipIntro', '1');
       goDesktop();
     } else {
       var pendingDesktopRedirect = null;
@@ -76,12 +98,24 @@
     // call site that sets it) suppresses the intro on its destination
     // page. A normal load, a manual reload, or a redirect from the
     // initial synchronous check further up never has this marker set, so
-    // they always show it.
+    // they always show it. Returning to the Campus (Back/Forward, or
+    // from a sub-site — see glonariReturningToCampus above) skips it too.
     if (sessionStorage.getItem('glonariSkipIntro')) {
       sessionStorage.removeItem('glonariSkipIntro');
-    } else {
+    } else if (!glonariReturningToCampus()) {
       document.documentElement.classList.add('intro-active');
     }
+  </script>
+  <script>
+    // Same WebKit check as the desktop index.html <head>: WebKit (Safari on
+    // macOS, any browser on iOS) shows WebM VP9 alpha as an opaque box, so
+    // the presenter falls back to its still poster there.
+    (function () {
+      var ua = navigator.userAgent;
+      if (/AppleWebKit\//.test(ua) && !/(Chrome|Chromium)\//.test(ua)) {
+        document.documentElement.classList.add('no-alpha-webm');
+      }
+    })();
   </script>
   <title>Glonari — Global</title>
   <link rel="stylesheet" href="../design-tokens.css" />
@@ -288,6 +322,18 @@
         <img src="../assets/fountain.png" alt="Glonari globe fountain" class="mobile-fountain__image" width="379" height="202" />
       </picture>
     </div>
+
+    <!-- Plaza presenter (Meet Gia), same assets as desktop's .presenter.
+         A link to ../meet-gia/ (tap on the silhouette only, or Enter/Space;
+         see main.js). No gesture playback yet. Video by default; the
+         poster <picture> only under html.no-alpha-webm. -->
+    <div class="mobile-presenter" tabindex="0" role="link" aria-label="Meet Gia — open">
+      <video class="presenter__video" muted playsinline preload="auto" poster="../assets/presenter-poster.png"><source data-src="../assets/presenter.webm" type="video/webm"></video>
+      <picture class="presenter__poster">
+        <source type="image/webp" srcset="../assets/presenter-poster.webp" />
+        <img src="../assets/presenter-poster.png" alt="" width="540" height="910" />
+      </picture>
+    </div>
   </main>
 
   <!-- Same #modal-overlay/#modal-card markup as desktop's index.html —
@@ -300,6 +346,11 @@
       <button id="modal-close" type="button">Close</button>
     </div>
   </div>
+
+  <!-- Same full-screen cut-to-black as the root index.html's
+       #exit-transition: faded in by main.js right before navigating to
+       ../meet-gia/, so it meets that page's dark entry curtain. -->
+  <div id="exit-transition" aria-hidden="true"></div>
 
   <!-- Same GSAP build/version as the root index.html (and, until
        2026-10-01, the former digital-banker/lobby/), for one version in use

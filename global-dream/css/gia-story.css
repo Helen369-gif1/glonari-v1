@@ -87,6 +87,51 @@
   border-radius: 8px;
 }
 
+/* Chapter cards only (approved 2026-10-02): the translucent surface above
+   is unchanged; they add a gold border, a 3px gold top bar clipped by the
+   radius, and depth. The final CTA card keeps the shared surface alone. */
+.gd-module {
+  position: relative;
+  overflow: clip;
+  border-color: var(--gd-gold-line);
+  box-shadow: var(--gd-shadow-card), 0 10px 30px color-mix(in srgb, var(--gd-night) 22%, transparent);
+}
+
+.gd-module::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gd-gold);
+  transform-origin: left;
+}
+
+/* Entrance in the pinned story: gia-story.js adds .is-entered once, the
+   first time the card's button is fully inside the stage. The rise uses the
+   individual translate property, so it composes with the track's inline
+   transform instead of fighting it. Without .is-scrub (reduced motion,
+   short viewports, no JS) the cards are at rest with the bar drawn. */
+.gd-story.is-scrub .gd-module {
+  transition:
+    opacity 600ms cubic-bezier(.22, .61, .36, 1),
+    translate 600ms cubic-bezier(.22, .61, .36, 1);
+}
+
+.gd-story.is-scrub .gd-module::before {
+  transition: transform 600ms cubic-bezier(.22, .61, .36, 1);
+}
+
+.gd-story.is-scrub .gd-module:not(.is-entered) {
+  opacity: 0;
+  translate: 0 16px;
+}
+
+.gd-story.is-scrub .gd-module:not(.is-entered)::before {
+  transform: scaleX(0);
+}
+
 .gd-module__label {
   display: flex;
   align-items: center;
@@ -129,6 +174,18 @@
 .gd-module__cta {
   gap: 10px;
   margin-top: var(--gd-space-3);
+  border-color: var(--gd-gold);
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.gd-module__cta:hover,
+.gd-module__cta:focus-visible {
+  border-color: var(--gd-gold-deep);
+  box-shadow: 0 0 0 4px var(--gd-gold-soft);
 }
 
 .gd-module__cta::after {
