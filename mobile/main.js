@@ -346,12 +346,24 @@
   // `transitionend` clears that flag it has already reassigned `position`
   // to the matching real value — see that listener above), so this can
   // never route a clone tap into openBuildingModal().
+  //
+  // Same exception as the desktop main.js's NAV_TARGETS (2026-10-12): a
+  // building listed here leaves the Campus for its own site, through the
+  // same #exit-transition fade as the presenter → Meet Gia, instead of
+  // opening the section modal. Only the centered building navigates; a tap
+  // on a peeking one (or its clone) still just pages the carousel.
+  const NAV_TARGETS = {
+    'building-banker': '../digital-banker/gia/index.html',
+  };
+
   function activateFrame(frame) {
     if (!frame) return;
     const i = frames.indexOf(frame);
     if (i === -1 || isAnimating) return;
     if (i === position) {
-      openBuildingModal(frame);
+      const url = NAV_TARGETS[frame.dataset.building];
+      if (url) navigateWithFade(url);
+      else openBuildingModal(frame);
     } else {
       goTo(i, true);
     }

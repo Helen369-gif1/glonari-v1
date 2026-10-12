@@ -361,6 +361,8 @@ Confirmed prior behavior (historical; see correction above): the scene scaled fl
 > **UPDATE (2026-10-12, later still) — tap feedback on Gia.** Pressing a finger on her now visibly highlights her: a gold glow along her silhouette and a slight grow from the feet (the mobile counterpart of desktop's hover glow, deliberately stronger so it reads on her light outfit against the light tiles). It clears if the finger is lifted without opening Meet Gia, stays on while the screen fades to Meet Gia, and only reacts on her figure, not the empty part of her box. See DEVELOPMENT_PLAN.md Stage 14.
 
 > **UPDATE (2026-10-12) — no greeting gesture on mobile (confirmed decision).** "On mobile she does not play her greeting yet … Gesture playback … planned as follow-up steps" above: this is no longer planned. On mobile Gia deliberately stays static — on iPhone a still picture is shown instead of the video in any case, so the gesture would only ever be seen on Android. Tapping her (Meet Gia link, tap highlight) is unaffected; the desktop gesture is unchanged. See DEVELOPMENT_PLAN.md Stage 14.
+>
+> **SUPERSEDED (2026-10-12) — Digital Banker on mobile no longer opens the section modal; it opens the Digital Banker site, as on desktop.** "Tapping the active/centered building opens the modal" (the 2026-08-24 entry above) now holds for 6 of the 7 buildings. Tapping the **centered** Digital Banker (or Enter/Space on it) fades the Campus to black (`#exit-transition`, the same fade as the Gia → Meet Gia link) and opens `digital-banker/gia/`, continuing into the Atrium and Global Reserve / Global Dream like on desktop (§14). Tapping a peeking Digital Banker still only centers it. Returning with GIA's Back lands on `mobile/` without the intro and without the black fade. See DEVELOPMENT_PLAN.md Stage 14's matching note. See chat/prompt from 2026-10-12.
 
 ## 20. Accessibility requirements
 
@@ -417,6 +419,7 @@ Confirmed: any global movement, hover animation, loading transition, and panel a
 - The Digital Banker chain's second screen is the Atrium (`digital-banker/atrium/`, 210° three.js panorama with six doorways), not the former arches lobby (`digital-banker/lobby/`, deleted 2026-10-01). Chain: campus → GIA → Atrium → Global Reserve (Atrium → Global Reserve hand-off pending).
   > **SUPERSEDED (2026-10-01)** — chain is now campus → GIA → Atrium → Global Reserve or Global Dream (`global-dream/`), both hand-offs built with a dark veil. See §14's matching note. See §14's 2026-10-01 note.
   > **SUPERSEDED (2026-10-12)** — chain unchanged; the `global-dream/` destination itself was refreshed to the standalone project's current version (new Screens 2a/2b). See §14's 2026-10-12 note.
+  > **SUPERSEDED (2026-10-12)** — the chain now starts on mobile too: the centered Digital Banker in the `mobile/` carousel opens `digital-banker/gia/` (black fade) instead of the section modal; a peeking one only centers. See §19's matching note.
 
 ## 24. Open questions
 
