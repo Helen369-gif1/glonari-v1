@@ -338,6 +338,19 @@ body{
   var PX_PER_SECOND = 620;     // scroll pace
   var HOLD_SHARE    = 0.15;    // last 15% of the scroll holds the final frame
   var SMOOTHING     = 0.16;    // lerp factor, lower = softer
+
+  /* Touch devices (added 2026-10-12): at PX_PER_SECOND the clip is ~7400px
+     of scroll — 15-20 swipes on a phone. On a coarse pointer (same test as
+     atrium.js) the whole scroll is instead TOUCH_SCROLL_SCREENS viewport
+     heights (~2650px on an iPhone 14, ~4-6 swipes), and the final-frame hold
+     shrinks to TOUCH_HOLD_SHARE: the final frame hands off to the atrium on
+     its own after FINAL_FRAME_ADVANCE_MS, so a long empty tail isn't needed.
+     Mouse/trackpad desktops keep PX_PER_SECOND and HOLD_SHARE unchanged.
+     To retune the phone pace, change TOUCH_SCROLL_SCREENS only. */
+  var IS_TOUCH             = window.matchMedia('(pointer: coarse)').matches;
+  var TOUCH_SCROLL_SCREENS = 4;     // whole scroll = 4 x viewport height
+  var TOUCH_HOLD_SHARE     = 0.05;  // last 5% of the scroll holds the final frame
+  if (IS_TOUCH) HOLD_SHARE = TOUCH_HOLD_SHARE;
   var SEEK_EPSILON  = 1 / 48;  // half a frame @ 24fps
 
   var CROSSFADE = 0.5;         // s — per digital_banker_timecoding.md
@@ -410,6 +423,45 @@ body{
     advanceTimer = null;
   }
 
+  /* Second, scroll-independent exit (added 2026-10-12): once the final
+     frame is actually on screen — the smoothed currentTime in tick() has
+     caught up with DURATION, not merely targetTime — we wait
+     FINAL_FRAME_ADVANCE_MS and hand off to the atrium even if the visitor
+     stops scrolling, instead of leaving them on a still frame until they
+     scroll the remaining ~1100px of hold. Scrolling back out of the final
+     frame (targetTime < DURATION) cancels it; returning restarts the full
+     delay. The bottom-of-page path above still applies — whichever fires
+     first navigates (goToNextScreen is guarded by `navigating`). Not armed
+     in #t= review mode. finalFrameArmed is cleared when the page comes
+     back from the bfcache (see pageshow below), so returning from the
+     atrium with Back does not bounce straight forward again; it re-arms
+     as soon as the visitor scrolls off the final frame. */
+  var FINAL_FRAME_ADVANCE_MS = 2500;
+  var finalFrameTimer        = null;
+  var finalFrameArmed        = true;
+
+  function cancelFinalFrameAdvance() {
+    if (!finalFrameTimer) return;
+    window.clearTimeout(finalFrameTimer);
+    finalFrameTimer = null;
+  }
+
+  function updateFinalFrameAdvance() {
+    if (navigating) return;
+    if (frozenTime() !== null || targetTime < DURATION) {
+      cancelFinalFrameAdvance();
+      finalFrameArmed = true;
+      return;
+    }
+    if (!finalFrameArmed || finalFrameTimer) return;
+    if (currentTime >= DURATION - SEEK_EPSILON) {
+      finalFrameTimer = window.setTimeout(function () {
+        finalFrameTimer = null;
+        goToNextScreen();
+      }, FINAL_FRAME_ADVANCE_MS);
+    }
+  }
+
   /* ---------------- atrium asset prefetch -------------------------
      The next screen (digital-banker/atrium/) waits behind its own
      #gia-entry-veil until its WebGL scene is ready, and that readiness is
@@ -479,9 +531,24 @@ body{
   /* ---------------- layout ------------------------------------- */
   var scrollLength = 0;
 
+  /* Touch scroll length is tied to the viewport height, but mobile browsers
+     change innerHeight while the URL bar collapses/expands mid-scroll. The
+     base height is therefore only re-read when the width changes (rotation,
+     resized window), so the scrub doesn't jump under the visitor's finger. */
+  var touchBaseW = 0;
+  var touchBaseH = 0;
+
   function layout() {
     var vh = window.innerHeight;
-    scrollLength = Math.round((DURATION * PX_PER_SECOND) / (1 - HOLD_SHARE));
+    if (IS_TOUCH) {
+      if (!touchBaseH || window.innerWidth !== touchBaseW) {
+        touchBaseW = window.innerWidth;
+        touchBaseH = vh;
+      }
+      scrollLength = Math.round(TOUCH_SCROLL_SCREENS * touchBaseH);
+    } else {
+      scrollLength = Math.round((DURATION * PX_PER_SECOND) / (1 - HOLD_SHARE));
+    }
     track.style.height = (vh + scrollLength) + 'px';
   }
 
@@ -560,6 +627,7 @@ body{
       applyText(currentTime);
     }
 
+    updateFinalFrameAdvance();
     requestAnimationFrame(tick);
   }
 
@@ -613,6 +681,20 @@ body{
   }, { passive: true });
 
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+  /* Back from the atrium via the bfcache: the page is restored exactly as
+     it was left — `navigating` set and #exit-veil opaque. Lift the veil,
+     drop any pending timers and disarm the final-frame auto-advance until
+     the visitor scrolls off the final frame, so they aren't sent straight
+     back to the atrium. */
+  window.addEventListener('pageshow', function (e) {
+    if (!e.persisted) return;
+    cancelAdvance();
+    cancelFinalFrameAdvance();
+    finalFrameArmed = false;
+    navigating = false;
+    if (exitVeil) exitVeil.classList.remove('active');
+  });
 
   /* reveal the copy once the first frame and the webfonts are in */
   function reveal() { document.body.classList.add('is-ready'); }
