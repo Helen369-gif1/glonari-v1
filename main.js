@@ -302,6 +302,32 @@
     ready: false,
   }));
 
+  // The plaza presenter (Meet Gia) joins the same list as one more
+  // hover/click/focus target. Its hit mask is a separate, never-rendered
+  // silhouette (assets/presenter-hitmask.png: same 540x910 frame as the
+  // video, union of every arm position, no ground shadow) sampled against
+  // whichever media is actually shown (the video, or the poster under
+  // html.no-alpha-webm) — that box already carries the plaza's parallax.
+  // It lives inside .layer.plaza (z-index 1000, above every building), so
+  // where it overlaps a building it always wins (zPriority).
+  const presenterEl = document.querySelector('.presenter');
+  if (presenterEl) {
+    const hitImg = new Image();
+    hitImg.src = 'assets/presenter-hitmask.png';
+    buildings.push({
+      el: presenterEl,
+      img: hitImg,
+      hitEl: () => presenterEl.querySelector('.presenter__video') || presenterEl.querySelector('.presenter__poster img'),
+      zPriority: Infinity,
+      canvas: null,
+      ctx: null,
+      ready: false,
+    });
+  }
+  // Set by setupPresenterGesture() (see the end of this file); hover entry
+  // onto the presenter asks it for a replay under its usual rules.
+  let presenterGesture = null;
+
   function prepareBuildingMask(building) {
     const { img } = building;
     if (!img.naturalWidth || !img.naturalHeight) return;
@@ -330,7 +356,9 @@
   // for both without hardcoding per-building crop math here.
   function sampleAlpha(building, clientX, clientY) {
     if (!building.ready) return 0;
-    const rect = building.img.getBoundingClientRect();
+    const hitEl = building.hitEl ? building.hitEl() : building.img;
+    if (!hitEl) return 0;
+    const rect = hitEl.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return 0;
 
     const lx = (clientX - rect.left) / rect.width;
@@ -342,7 +370,7 @@
     let ix;
     let iy;
 
-    if (getComputedStyle(building.img).objectFit === 'cover') {
+    if (getComputedStyle(hitEl).objectFit === 'cover') {
       const scale = Math.max(rect.width / nw, rect.height / nh);
       const drawW = nw * scale;
       const drawH = nh * scale;
@@ -433,11 +461,14 @@
     let bestZ = -Infinity;
     for (const building of buildings) {
       if (sampleAlpha(building, clientX, clientY) <= HOVER_ALPHA_THRESHOLD) continue;
-      const z = parseInt(building.el.style.zIndex, 10) || 0;
+      const z = building.zPriority || parseInt(building.el.style.zIndex, 10) || 0;
       if (z > bestZ) {
         best = building;
         bestZ = z;
       }
+    }
+    if (best && best.el === presenterEl && hoveredBuilding !== best && presenterGesture) {
+      presenterGesture.replay();
     }
     hoveredBuilding = best;
     recomputeElevated();
@@ -466,10 +497,11 @@
   // the matching markup/CSS. Only what's desktop-specific stays here: the
   // hover→click trigger, and clearing hover state when the modal opens.
   function getBuildingKey(el) {
+    if (el === presenterEl) return 'presenter';
     return Array.from(el.classList).find((cls) => cls.startsWith('building-')) || null;
   }
 
-  // ---------- Cross-project navigation (Digital Banker only) ----------
+  // ---------- Cross-project navigation (Digital Banker, Meet Gia presenter) ----------
   // Every other building opens the in-page section modal (below). Digital
   // Banker is the one exception: it leaves this page entirely for the
   // separate Digital-Banker-GIA scroll-cinematic project. NAV_TARGETS maps
@@ -478,6 +510,7 @@
   // one more entry here, not another special-cased branch.
   const NAV_TARGETS = {
     'building-banker': 'digital-banker/gia/index.html',
+    'presenter': 'meet-gia/index.html',
   };
 
   const exitTransition = document.getElementById('exit-transition');
@@ -609,14 +642,121 @@
   // showing whatever frame it stopped on, rather than removed entirely) and
   // resumed if the OS-level setting changes live — same reduceMotionQuery
   // instance declared above, mirroring index.html's own live-query pattern.
-  const waterVideo = document.querySelector('.water-video');
-  if (waterVideo) {
-    const syncWaterMotion = () => {
-      if (reduceMotionQuery.matches) {
-        waterVideo.pause();
-      } else {
-        waterVideo.play().catch(() => {});
+  // The presenter video is loaded here too but driven by its own
+  // play-once/replay logic (setupPresenterGesture below). Its <source> ships as
+  // data-src: under html.no-alpha-webm (WebKit, see index.html <head>) the
+  // video is removed unfetched and only the poster <picture> shows;
+  // everywhere else the src is filled in and loaded here.
+  const loopVideos = [document.querySelector('.water-video')];
+  const presenterVideo = document.querySelector('.presenter__video');
+  if (presenterVideo) {
+    if (document.documentElement.classList.contains('no-alpha-webm')) {
+      presenterVideo.remove();
+    } else {
+      presenterVideo.querySelectorAll('source[data-src]').forEach((source) => {
+        source.src = source.dataset.src;
+      });
+      presenterVideo.load();
+      presenterGesture = setupPresenterGesture(presenterVideo);
+    }
+  }
+
+  // ---------- Presenter gesture (play once, replay on mouse movement) ----------
+  // No loop/autoplay on .presenter__video: the greeting plays once on load
+  // (after the branded intro has faded out, if one is shown) and rests on
+  // its last frame (arm lowered). A noticeable mouse movement
+  // over the scene replays it from the start — never mid-gesture, never
+  // within the cooldown after it ends, never while the tab is hidden.
+  // Touch-only devices produce no mouse pointermove, so they get the load
+  // greeting only. Under reduced-motion it never plays and sits on frame 0.
+  function setupPresenterGesture(video) {
+    const PRESENTER_REPLAY_COOLDOWN_MS = 5000; // pause after a gesture ends before mouse can replay it
+    const PRESENTER_REPLAY_MIN_MOVE_PX = 40;   // accumulated pointer travel needed to trigger a replay
+
+    let greeted = false;   // load greeting has started (deferred while hidden / reduced-motion / intro)
+    // The branded intro overlay (intro.js) removes html.intro-active only
+    // after its exit fade completes, so the greeting waits for that and
+    // starts once the scene is actually visible. No intro → play on load.
+    let introPending = document.documentElement.classList.contains('intro-active');
+    let cooldownUntil = 0;
+    let travel = 0;
+    let lastX = null;
+    let lastY = null;
+
+    const isPlaying = () => !video.paused && !video.ended;
+    // Never mid-gesture, never during the post-gesture cooldown, never
+    // before the load greeting has run.
+    const canReplay = () => greeted && !isPlaying() && performance.now() >= cooldownUntil;
+
+    function playFromStart() {
+      if (reduceMotionQuery.matches || document.hidden) return;
+      greeted = true;
+      travel = 0;
+      video.currentTime = 0;
+      video.play().catch(() => {});
+    }
+
+    video.addEventListener('ended', () => {
+      cooldownUntil = performance.now() + PRESENTER_REPLAY_COOLDOWN_MS;
+      travel = 0;
+    });
+
+    viewport.addEventListener('pointermove', (event) => {
+      if (event.pointerType !== 'mouse') return;
+      const { clientX: x, clientY: y } = event;
+      if (lastX !== null) travel += Math.hypot(x - lastX, y - lastY);
+      lastX = x;
+      lastY = y;
+      // Movement during playback or cooldown doesn't count toward the next replay.
+      if (!canReplay()) {
+        travel = 0;
+        return;
       }
+      if (travel >= PRESENTER_REPLAY_MIN_MOVE_PX) playFromStart();
+    });
+
+    function syncPresenterMotion() {
+      if (reduceMotionQuery.matches) {
+        video.pause();
+        video.currentTime = 0;
+      } else if (!greeted && !introPending) {
+        playFromStart();
+      }
+    }
+    syncPresenterMotion();
+    if (introPending) {
+      const introObserver = new MutationObserver(() => {
+        if (document.documentElement.classList.contains('intro-active')) return;
+        introObserver.disconnect();
+        introPending = false;
+        syncPresenterMotion();
+      });
+      introObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    }
+    reduceMotionQuery.addEventListener('change', syncPresenterMotion);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && !greeted) syncPresenterMotion();
+    });
+
+    // Hover entry onto the figure (updateBuildingHover) — same rules as a
+    // mouse-movement replay, minus the travel threshold.
+    return {
+      replay() {
+        if (canReplay()) playFromStart();
+      },
+    };
+  }
+
+  const motionVideos = loopVideos.filter(Boolean);
+  if (motionVideos.length) {
+    const syncWaterMotion = () => {
+      motionVideos.forEach((video) => {
+        if (reduceMotionQuery.matches) {
+          video.pause();
+        } else {
+          video.play().catch(() => {});
+        }
+      });
     };
     syncWaterMotion();
     reduceMotionQuery.addEventListener('change', syncWaterMotion);
