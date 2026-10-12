@@ -285,15 +285,18 @@ html, body {
   pointer-events: none;
 }
 
-/* Presenter frame is 540x910 with the figure at x 20-368, y 20-892 (feet
-   ~2% above the frame's bottom edge). Fitted by screenshot at 1600x900:
-   feet on the tiles level with the pool's front-left rim, figure ~1.35x
-   the globe+pedestal height. */
+/* Presenter frame is 540x910 with the figure at x 20-368, y 20-892.
+   Close-up: main.js layoutPresenter() sizes and places it in px on every
+   layout pass (PRESENTER_SCALE x its former 10.64%-wide size, viewport
+   bottom edge across the knees, figure centre at PRESENTER_CENTER_X_VW).
+   The percentages below are only the pre-JS fallback, matching that
+   result at 1913x876. Ground shadows were dropped with the close-up: the
+   feet are always below the viewport now. */
 .presenter {
   position: absolute;
-  left: 23.56%;
-  bottom: 7.64%;
-  width: 10.64%;
+  left: 19.9%;
+  top: 38.5%;
+  width: 19.6%;
   pointer-events: none;
 }
 .presenter img,
@@ -311,71 +314,23 @@ html, body {
 .no-alpha-webm .presenter__poster {
   display: block;
 }
-/* Ground shadow, two layers as pseudo-elements so they ride the plaza's
-   parallax with the figure. Percentages are of the 540x910 presenter
-   frame: soles at x 21-233, y ~868 (right foot, further back) to ~890
-   (left foot). plaza.png's planter shadows fall right and slightly back
-   (low warm sun from the left), so the soft layer is pushed right and
-   tilted up-right; the contact layer tilts with the stance. Multiply
-   keeps them reading as darkened tile, not a grey patch. The media sits
-   on z-index 1 so both shadows stay under the figure. */
-.presenter::before,
-.presenter::after {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  border-radius: 50%;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-}
-/* Diffuse: wide, very transparent, fading out toward the light's far side. */
-.presenter::before {
-  left: 6%;
-  top: 93.6%;
-  width: 82%;
-  height: 7%;
-  background: radial-gradient(ellipse 50% 50% at 42% 50%,
-    rgba(74, 46, 24, 0.32) 0%,
-    rgba(74, 46, 24, 0.17) 45%,
-    rgba(74, 46, 24, 0) 100%);
-  filter: blur(6px);
-  transform: rotate(-5deg);
-}
-/* Contact: small, dense, darkest right under the shoes. */
-.presenter::after {
-  left: 1.5%;
-  top: 94.9%;
-  width: 46%;
-  height: 2.4%;
-  background: radial-gradient(ellipse 50% 50% at 50% 50%,
-    rgba(48, 28, 14, 0.68) 0%,
-    rgba(48, 28, 14, 0.36) 45%,
-    rgba(48, 28, 14, 0) 100%);
-  filter: blur(2px);
-  transform: rotate(-8deg);
-}
-.presenter__video,
-.presenter__poster {
-  position: relative;
-  z-index: 1;
-}
 
 /* Hover/focus (Meet Gia link): same language as .layer.building.is-hovered
    + .building-lift — alpha-following drop-shadow glow and a small scale —
    toggled by main.js's hit-testing on the same "is-hovered" class. Both
-   live on the media, not on .presenter: a filter/transform there would
-   isolate the ::before/::after ground shadows from the tiles they
-   multiply onto. Scale origin is the soles' centre (x 21-233, y ~880 of
-   the 540x910 frame), so the feet stay planted on their contact shadow
-   while the figure grows up from it. Glow radii are scaled down from the
-   buildings' 10px/24px for a much smaller silhouette. Focus outline off
-   for the same reason as .layer.building: the glow is the indicator. */
+   live on the media, not on .presenter, whose own transform is the
+   parallax damping set by main.js. Scale origin is the knee line at the
+   figure's centre (x 194, y ~645 of the 540x910 frame) — the viewport's
+   bottom edge — so the figure grows up and out from the frame edge
+   instead of lifting off it. Glow radii match the buildings' now that the
+   silhouette is building-sized. Focus outline off for the same reason as
+   .layer.building: the glow is the indicator. */
 .presenter {
   outline: none;
 }
 .presenter__video,
 .presenter__poster {
-  transform-origin: 23.5% 96.7%;
+  transform-origin: 35.9% 70.9%;
   transition: transform 0.25s ease, filter 0.25s ease;
   filter:
     drop-shadow(0 0 0 rgba(255, 209, 128, 0))
@@ -385,8 +340,8 @@ html, body {
 .presenter.is-hovered .presenter__poster {
   transform: scale(1.04);
   filter:
-    drop-shadow(0 0 6px rgba(255, 209, 128, 0.6))
-    drop-shadow(0 0 16px rgba(255, 178, 90, 0.4));
+    drop-shadow(0 0 10px rgba(255, 209, 128, 0.6))
+    drop-shadow(0 0 24px rgba(255, 178, 90, 0.4));
 }
 @media (prefers-reduced-motion: reduce) {
   .presenter__video,

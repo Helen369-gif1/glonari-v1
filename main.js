@@ -80,6 +80,64 @@
     return Math.min(max, Math.max(min, value));
   }
 
+  // ---------- Presenter close-up (Meet Gia) ----------
+  // The plaza presenter is the scene's lead: a close-up framed in viewport
+  // terms, not plaza tiles — scaled PRESENTER_SCALE x her former size
+  // (CSS width 10.64% of the 2050 frame, i.e. a 218.12x367.57 logical
+  // 540x910 frame) and positioned so the viewport's bottom edge crosses
+  // her knees. Measurements are in the 540x910 frame: head top y 20, knee
+  // y ~645 (mid-thigh ~560, mid-shin ~745 — the allowed band for the
+  // bottom edge), static figure centre x 194, and the hitmask's full reach
+  // incl. the gesture arm x 16-523. Sized/placed in layout(); her
+  // horizontal parallax is the plaza's, damped per side (presenterRoom)
+  // just enough that the figure never reaches a viewport edge.
+  const PRESENTER_SCALE = 1.84;
+  const PRESENTER_CENTER_X_VW = 0.22;
+  const PRESENTER_BASE_H = 367.57;
+  const PRESENTER_FRAME_W = 540;
+  const PRESENTER_FRAME_H = 910;
+  const PRESENTER_HEAD_Y = 20;
+  const PRESENTER_KNEE_Y = 645;
+  const PRESENTER_FIGURE_X = 194;
+  const PRESENTER_REACH_LEFT = 16;
+  const PRESENTER_REACH_RIGHT = 523;
+  const PRESENTER_HEAD_MIN_VH = 0.12; // head-top floor (leaves room for the hover scale-up)
+  const PRESENTER_EDGE_PX = 12;
+  const presenterBox = document.querySelector('.presenter');
+  const presenterRoom = { kLeft: 1, kRight: 1 };
+
+  function layoutPresenter(vw, vh, renderW, renderH, scale, plazaMaxShiftX) {
+    if (!presenterBox) return;
+    const reachW = PRESENTER_REACH_RIGHT - PRESENTER_REACH_LEFT;
+    let h = PRESENTER_SCALE * PRESENTER_BASE_H * scale;
+    // Ultra-wide (width-driven cover) or very narrow windows: shrink
+    // rather than crop the head or push the reach past the sides.
+    h = Math.min(
+      h,
+      (vh * (1 - PRESENTER_HEAD_MIN_VH) * PRESENTER_FRAME_H) / (PRESENTER_KNEE_Y - PRESENTER_HEAD_Y),
+      ((vw - 2 * PRESENTER_EDGE_PX) * PRESENTER_FRAME_H) / reachW,
+    );
+    const px = h / PRESENTER_FRAME_H; // screen px per frame px
+    const cx = clamp(
+      vw * PRESENTER_CENTER_X_VW,
+      PRESENTER_EDGE_PX + (PRESENTER_FIGURE_X - PRESENTER_REACH_LEFT) * px,
+      vw - PRESENTER_EDGE_PX - (PRESENTER_REACH_RIGHT - PRESENTER_FIGURE_X) * px,
+    );
+    const frameLeft = cx - PRESENTER_FIGURE_X * px;
+    const frameTop = vh - PRESENTER_KNEE_Y * px;
+
+    // .presenter lives in .layer.plaza, whose box is .scene-world's
+    // (centered, top-left at ((vw-renderW)/2, (vh-renderH)/2) at rest).
+    presenterBox.style.left = `${frameLeft - (vw - renderW) / 2}px`;
+    presenterBox.style.top = `${frameTop - (vh - renderH) / 2}px`;
+    presenterBox.style.width = `${PRESENTER_FRAME_W * px}px`;
+
+    const roomLeft = frameLeft + PRESENTER_REACH_LEFT * px - PRESENTER_EDGE_PX;
+    const roomRight = vw - PRESENTER_EDGE_PX - (frameLeft + PRESENTER_REACH_RIGHT * px);
+    presenterRoom.kLeft = plazaMaxShiftX > 0 ? clamp(roomLeft / plazaMaxShiftX, 0, 1) : 1;
+    presenterRoom.kRight = plazaMaxShiftX > 0 ? clamp(roomRight / plazaMaxShiftX, 0, 1) : 1;
+  }
+
   // ---------- Cover-fit sizing + real-overflow safe travel ----------
   // .scene-world is sized in real pixels to the "object-fit: cover"
   // render size of the 2050x800 frame for the current viewport (plus
@@ -153,13 +211,21 @@
     maxTravelX = worldMaxTravelX / maxDepth;
     maxTravelY = worldMaxTravelY / maxDepth;
 
+    layoutPresenter(vw, vh, renderW, renderH, scale, maxTravelX * plazaLayer.depth);
+
     // Keep any in-flight target within the freshly recomputed range.
     target.x = clamp(target.x, -maxTravelX, maxTravelX);
     target.y = clamp(target.y, -maxTravelY, maxTravelY);
   }
 
-  window.addEventListener('resize', layout);
-  window.addEventListener('orientationchange', layout);
+  // applyLayerTransforms() too: the presenter's per-side damping changes
+  // with the viewport even while the pointer offset doesn't.
+  function relayout() {
+    layout();
+    applyLayerTransforms();
+  }
+  window.addEventListener('resize', relayout);
+  window.addEventListener('orientationchange', relayout);
 
   // ---------- Pointer-driven movement (independent transform per .layer) ----------
   const target = { x: 0, y: 0 };
@@ -172,6 +238,13 @@
       const lx = (offset.x * layer.depth).toFixed(2);
       const ly = (offset.y * layer.depth).toFixed(2);
       layer.el.style.transform = `translate3d(${lx}px, ${ly}px, 0)`;
+    }
+    // Counter-shift inside the plaza so the presenter travels k x the
+    // plaza's horizontal shift (see layoutPresenter()).
+    if (presenterBox) {
+      const shift = offset.x * plazaLayer.depth;
+      const k = shift < 0 ? presenterRoom.kLeft : presenterRoom.kRight;
+      presenterBox.style.transform = `translate3d(${(shift * (k - 1)).toFixed(2)}px, 0, 0)`;
     }
   }
 
